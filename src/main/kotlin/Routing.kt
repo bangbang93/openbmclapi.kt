@@ -1,5 +1,9 @@
 package com.bangbang93.openbmclapi
 
+import com.bangbang93.openbmclapi.config.ClusterConfig
+import com.bangbang93.openbmclapi.model.Counters
+import com.bangbang93.openbmclapi.routes.clusterRoutes
+import com.bangbang93.openbmclapi.storage.IStorage
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*
@@ -16,17 +20,22 @@ import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.dsl.module
-import org.koin.ktor.plugin.Koin
-import org.koin.logger.slf4jLogger
+import org.koin.ktor.ext.inject
 import org.slf4j.event.*
 
 fun Application.configureRouting() {
+    val config by inject<ClusterConfig>()
+    val storage by inject<IStorage>()
+    val counters by inject<Counters>()
+    
     install(AutoHeadResponse)
     routing {
         get("/") {
-            call.respondText("Hello World!")
+            call.respondText("OpenBMCLAPI Cluster - Kotlin Edition")
         }
+        
+        clusterRoutes(config, storage, counters)
+        
         // Static plugin. Try to access `/static/index.html`
         staticResources("/static", "static")
     }

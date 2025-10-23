@@ -16,20 +16,14 @@ import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.dsl.module
+import org.koin.core.module.Module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import org.slf4j.event.*
 
-fun Application.configureFrameworks() {
+fun Application.configureFrameworks(appModule: Module) {
     install(Koin) {
         slf4jLogger()
-        modules(module {
-            single<HelloService> {
-                HelloService {
-                    println(environment.log.info("Hello, World!"))
-                }
-            }
-        })
+        modules(appModule)
     }
 }
