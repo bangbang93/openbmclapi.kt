@@ -1,8 +1,44 @@
-# agent
+# OpenBMCLAPI - Kotlin Edition
 
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
+**Note**: This is a Kotlin/Ktor port of the original [bangbang93/openbmclapi](https://github.com/bangbang93/openbmclapi) project.
 
-Here are some useful links to get you started:
+For detailed documentation about this Kotlin implementation, see [README_KT.md](README_KT.md).
+
+## Quick Start
+
+This project was created using the [Ktor Project Generator](https://start.ktor.io) and has been enhanced to implement the OpenBMCLAPI cluster node functionality.
+
+### Prerequisites
+
+- Java 11 or higher  
+- CLUSTER_ID and CLUSTER_SECRET from bangbang93
+
+### Configuration
+
+Set your cluster credentials:
+
+```bash
+export CLUSTER_ID=your-cluster-id
+export CLUSTER_SECRET=your-cluster-secret
+```
+
+### Run
+
+```bash
+./gradlew run
+```
+
+The server will start and connect to the BMCLAPI master server to begin serving Minecraft resources.
+
+## What is OpenBMCLAPI?
+
+BMCLAPI is a service developed by @bangbang93 as part of BMCL to address slow download speeds from Amazon S3 for Minecraft resources in China. OpenBMCLAPI allows community members to run distributed nodes that help serve these files efficiently.
+
+For more information about the project and how to participate, visit the [original repository](https://github.com/bangbang93/openbmclapi).
+
+---
+
+## Original Ktor Project Features
 
 - [Ktor Documentation](https://ktor.io/docs/home.html)
 - [Ktor GitHub page](https://github.com/ktorio/ktor)
