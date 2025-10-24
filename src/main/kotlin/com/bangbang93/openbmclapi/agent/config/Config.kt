@@ -11,7 +11,6 @@ data class ClusterConfig(
     val clusterPublicPort: Int = port,
     val byoc: Boolean = false,
     val disableAccessLog: Boolean = false,
-    val enableNginx: Boolean = false,
     val enableUpnp: Boolean = false,
     val storage: String = "file",
     val storageOpts: Map<String, String> = emptyMap(),
@@ -76,8 +75,6 @@ fun Application.loadConfig(): ClusterConfig {
             lookupString("openbmclapi.cluster.byoc", "CLUSTER_BYOC")?.toBoolean() ?: false,
         disableAccessLog =
             lookupString("openbmclapi.cluster.disableAccessLog", "DISABLE_ACCESS_LOG")?.toBoolean() ?: false,
-        enableNginx =
-            lookupString("openbmclapi.cluster.enableNginx", "ENABLE_NGINX")?.toBoolean() ?: false,
         enableUpnp =
             lookupString("openbmclapi.cluster.enableUpnp", "ENABLE_UPNP")?.toBoolean() ?: false,
         storage =
