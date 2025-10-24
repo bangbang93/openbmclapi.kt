@@ -2,7 +2,6 @@ package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
-import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.model.EnableRequest
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.FileList
@@ -13,14 +12,11 @@ import com.bangbang93.openbmclapi.agent.util.HashUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
 import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 import java.net.URI
 
@@ -39,7 +34,7 @@ class ClusterService(
     private val config: ClusterConfig,
     private val storage: IStorage,
     private val tokenManager: TokenManager,
-    private val counters: Counters,
+    private val httpClient: HttpClient,
 ) {
     private val version = System.getProperty("app.version") ?: "0.0.1"
     private val userAgent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/$version"
@@ -47,21 +42,9 @@ class ClusterService(
     var isEnabled = false
     var wantEnable = false
 
-    private val client =
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json(
-                    Json {
-                        ignoreUnknownKeys = true
-                        prettyPrint = false
-                    },
-                )
-            }
-        }
-
     suspend fun getFileList(lastModified: Long? = null): FileList {
         val response =
-            client.get("${config.clusterBmclapi}/openbmclapi/files") {
+            httpClient.get("${config.clusterBmclapi}/openbmclapi/files") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
                 header(HttpHeaders.UserAgent, userAgent)
                 if (lastModified != null) {
@@ -79,7 +62,7 @@ class ClusterService(
     }
 
     suspend fun getConfiguration(): OpenbmclapiAgentConfiguration =
-        client
+        httpClient
             .get("${config.clusterBmclapi}/openbmclapi/configuration") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
                 header(HttpHeaders.UserAgent, userAgent)
@@ -124,7 +107,7 @@ class ClusterService(
 
     private suspend fun downloadFile(file: FileInfo) {
         val response =
-            client.get("${config.clusterBmclapi}${file.path}") {
+            httpClient.get("${config.clusterBmclapi}${file.path}") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
                 header(HttpHeaders.UserAgent, userAgent)
             }
@@ -216,6 +199,5 @@ class ClusterService(
 
     fun close() {
         socket?.close()
-        client.close()
     }
 }

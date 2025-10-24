@@ -13,6 +13,23 @@ application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
 
+// 在打包时把项目 version 写入 JAR 的 manifest，方便运行时通过 Package.getImplementationVersion() 读取
+tasks.withType<Jar> {
+    manifest {
+        attributes(
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version,
+        )
+    }
+}
+
+// 在 resources 里生成一个 version.properties 模板，以便在未打包（如 gradle run / IDE 运行）时也能读取项目 version
+tasks.processResources {
+    filesMatching("version.properties") {
+        expand("version" to project.version)
+    }
+}
+
 dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.ktor)
