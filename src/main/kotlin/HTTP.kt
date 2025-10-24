@@ -16,17 +16,14 @@ import io.ktor.server.plugins.partialcontent.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.dsl.module
-import org.koin.ktor.plugin.Koin
-import org.koin.logger.slf4jLogger
 import org.slf4j.event.*
 
 fun Application.configureHTTP() {
     install(PartialContent) {
-            // Maximum number of ranges that will be accepted from a HTTP request.
-            // If the HTTP request specifies more ranges, they will all be merged into a single range.
-            maxRangeCount = 10
-        }
+        // Maximum number of ranges that will be accepted from a HTTP request.
+        // If the HTTP request specifies more ranges, they will all be merged into a single range.
+        maxRangeCount = 10
+    }
     install(DefaultHeaders) {
         header("X-Engine", "Ktor") // will send this header with each response
     }

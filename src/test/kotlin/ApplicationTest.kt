@@ -9,18 +9,17 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ApplicationTest {
-
     @Test
-    fun testRoot() = testApplication {
-        application {
-            module()
-        }
-        
-        client.get("/").apply {
-            assertEquals(HttpStatusCode.OK, status)
-            val responseText = bodyAsText()
-            assertTrue(responseText.contains("OpenBMCLAPI"))
-        }
-    }
+    fun testRoot() =
+        testApplication {
+            application {
+                module()
+            }
 
+            client.get("/").apply {
+                assertEquals(HttpStatusCode.OK, status)
+                val responseText = bodyAsText()
+                assertTrue(responseText.contains("OpenBMCLAPI"))
+            }
+        }
 }

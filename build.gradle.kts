@@ -1,7 +1,9 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.ktlint)
 }
 
 group = "com.bangbang93.openbmclapi"
@@ -12,8 +14,11 @@ application {
 }
 
 dependencies {
+    implementation(libs.koin.core)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.koin.annotations)
+    ksp(libs.koin.ksp.compiler)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.serialization.kotlinx.json)
@@ -35,4 +40,22 @@ dependencies {
     implementation(libs.ktor.server.config.yaml)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+// Configure KSP to generate code in the correct source set
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+}
+
+// Configure ktlint
+ktlint {
+    filter {
+        exclude { entry ->
+            entry.file.toString().contains("generated")
+        }
+    }
+    // Disable wildcard import check as Ktor uses them extensively
+    disabledRules.add("no-wildcard-imports")
 }

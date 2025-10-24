@@ -10,21 +10,28 @@ object HashUtil {
         return "${hash.substring(0, 2)}${File.separator}$hash"
     }
 
-    fun validateFile(buffer: ByteArray, checkSum: String): Boolean {
+    fun validateFile(
+        buffer: ByteArray,
+        checkSum: String,
+    ): Boolean {
         val algorithm = if (checkSum.length == 32) "MD5" else "SHA-1"
         val digest = MessageDigest.getInstance(algorithm)
         val hash = digest.digest(buffer)
         return hash.toHexString() == checkSum
     }
 
-    fun checkSign(hash: String, secret: String, query: Map<String, String>): Boolean {
+    fun checkSign(
+        hash: String,
+        secret: String,
+        query: Map<String, String>,
+    ): Boolean {
         val s = query["s"] ?: return false
         val e = query["e"] ?: return false
 
         val mac = Mac.getInstance("HmacSHA1")
         val secretKey = SecretKeySpec(secret.toByteArray(), "HmacSHA1")
         mac.init(secretKey)
-        
+
         val toSign = "$secret$hash$e"
         mac.update(toSign.toByteArray())
         val sign = mac.doFinal().toBase64Url()
@@ -33,7 +40,10 @@ object HashUtil {
         return sign == s && System.currentTimeMillis() < expiryTime
     }
 
-    fun createHmacSha256(secret: String, data: String): String {
+    fun createHmacSha256(
+        secret: String,
+        data: String,
+    ): String {
         val mac = Mac.getInstance("HmacSHA256")
         val secretKey = SecretKeySpec(secret.toByteArray(), "HmacSHA256")
         mac.init(secretKey)

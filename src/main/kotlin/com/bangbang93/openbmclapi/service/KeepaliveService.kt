@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 class KeepaliveService(
     private val interval: Duration = 1.minutes,
     private val clusterService: ClusterService,
-    private val counters: Counters
+    private val counters: Counters,
 ) {
     private val logger = LoggerFactory.getLogger(KeepaliveService::class.java)
     private var job: Job? = null
@@ -31,15 +31,16 @@ class KeepaliveService(
 
     private fun schedule() {
         job?.cancel()
-        job = CoroutineScope(Dispatchers.IO).launch {
-            delay(interval)
-            logger.trace("Starting keep alive")
-            try {
-                emitKeepAlive()
-            } catch (e: Exception) {
-                logger.error("Keep alive failed", e)
+        job =
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(interval)
+                logger.trace("Starting keep alive")
+                try {
+                    emitKeepAlive()
+                } catch (e: Exception) {
+                    logger.error("Keep alive failed", e)
+                }
             }
-        }
     }
 
     private suspend fun emitKeepAlive() {
@@ -78,21 +79,22 @@ class KeepaliveService(
         }
 
         val currentCounters = Counters(counters.hits, counters.bytes)
-        
-        val request = KeepAliveRequest(
-            time = Instant.now().toString(),
-            hits = currentCounters.hits,
-            bytes = currentCounters.bytes
-        )
+
+        val request =
+            KeepAliveRequest(
+                time = Instant.now().toString(),
+                hits = currentCounters.hits,
+                bytes = currentCounters.bytes,
+            )
 
         // In a real implementation, this would emit to the socket and wait for acknowledgment
         // For now, we'll simulate success
         logger.info("Keep alive success, served ${currentCounters.hits} files, ${currentCounters.bytes} bytes")
-        
+
         // Reset counters
         counters.hits -= currentCounters.hits
         counters.bytes -= currentCounters.bytes
-        
+
         return true
     }
 

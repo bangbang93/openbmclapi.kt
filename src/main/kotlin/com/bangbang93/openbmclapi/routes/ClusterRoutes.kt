@@ -12,15 +12,21 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("ClusterRoutes")
 
-fun Route.clusterRoutes(config: ClusterConfig, storage: IStorage, counters: Counters) {
+fun Route.clusterRoutes(
+    config: ClusterConfig,
+    storage: IStorage,
+    counters: Counters,
+) {
     get("/download/{hash}") {
-        val hash = call.parameters["hash"]?.lowercase() ?: run {
-            call.respond(HttpStatusCode.BadRequest, "Missing hash parameter")
-            return@get
-        }
+        val hash =
+            call.parameters["hash"]?.lowercase() ?: run {
+                call.respond(HttpStatusCode.BadRequest, "Missing hash parameter")
+                return@get
+            }
 
-        val query = call.request.queryParameters.entries()
-            .associate { it.key to (it.value.firstOrNull() ?: "") }
+        val query =
+            call.request.queryParameters.entries()
+                .associate { it.key to (it.value.firstOrNull() ?: "") }
 
         val signValid = HashUtil.checkSign(hash, config.clusterSecret, query)
         if (!signValid) {
@@ -36,7 +42,7 @@ fun Route.clusterRoutes(config: ClusterConfig, storage: IStorage, counters: Coun
 
         call.response.header("x-bmclapi-hash", hash)
         val name = call.request.queryParameters["name"]
-        
+
         try {
             val result = storage.serveFile(hashPath, call, name)
             counters.bytes += result.bytes
@@ -48,9 +54,10 @@ fun Route.clusterRoutes(config: ClusterConfig, storage: IStorage, counters: Coun
     }
 
     get("/measure/{size}") {
-        val query = call.request.queryParameters.entries()
-            .associate { it.key to (it.value.firstOrNull() ?: "") }
-        
+        val query =
+            call.request.queryParameters.entries()
+                .associate { it.key to (it.value.firstOrNull() ?: "") }
+
         val path = "/measure/${call.parameters["size"]}"
         val isSignValid = HashUtil.checkSign(path, config.clusterSecret, query)
         if (!isSignValid) {
@@ -58,28 +65,32 @@ fun Route.clusterRoutes(config: ClusterConfig, storage: IStorage, counters: Coun
             return@get
         }
 
-        val size = call.parameters["size"]?.toIntOrNull() ?: run {
-            call.respond(HttpStatusCode.BadRequest)
-            return@get
-        }
+        val size =
+            call.parameters["size"]?.toIntOrNull() ?: run {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
 
         if (size > 200) {
             call.respond(HttpStatusCode.BadRequest)
             return@get
         }
 
-        val buffer = ByteArray(1024 * 1024) { (it % 4).let { idx ->
-            when(idx) {
-                0 -> 0x00
-                1 -> 0x66
-                2 -> 0xcc.toByte()
-                3 -> 0xff.toByte()
-                else -> 0
+        val buffer =
+            ByteArray(1024 * 1024) {
+                (it % 4).let { idx ->
+                    when (idx) {
+                        0 -> 0x00
+                        1 -> 0x66
+                        2 -> 0xcc.toByte()
+                        3 -> 0xff.toByte()
+                        else -> 0
+                    }
+                }
             }
-        } }
 
         call.response.header(HttpHeaders.ContentLength, (size * 1024 * 1024).toString())
-        
+
         call.respondOutputStream(contentType = ContentType.Application.OctetStream) {
             repeat(size) {
                 write(buffer)

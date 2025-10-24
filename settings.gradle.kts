@@ -1,4 +1,4 @@
-rootProject.name = "agent"
+rootProject.name = "openbmclapi-agent"
 
 dependencyResolutionManagement {
     repositories {

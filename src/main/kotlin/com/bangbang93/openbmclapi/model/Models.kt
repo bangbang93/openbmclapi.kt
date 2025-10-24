@@ -7,28 +7,28 @@ data class FileInfo(
     val path: String,
     val hash: String,
     val size: Long,
-    val mtime: Long
+    val mtime: Long,
 )
 
 @Serializable
 data class FileList(
-    val files: List<FileInfo>
+    val files: List<FileInfo>,
 )
 
 @Serializable
 data class SyncConfig(
     val source: String,
-    val concurrency: Int
+    val concurrency: Int,
 )
 
 @Serializable
 data class OpenbmclapiAgentConfiguration(
-    val sync: SyncConfig
+    val sync: SyncConfig,
 )
 
 @Serializable
 data class ChallengeResponse(
-    val challenge: String
+    val challenge: String,
 )
 
 @Serializable
@@ -36,20 +36,20 @@ data class TokenRequest(
     val clusterId: String,
     val challenge: String? = null,
     val signature: String? = null,
-    val token: String? = null
+    val token: String? = null,
 )
 
 @Serializable
 data class TokenResponse(
     val token: String,
-    val ttl: Long
+    val ttl: Long,
 )
 
 @Serializable
 data class KeepAliveRequest(
     val time: String,
     val hits: Long,
-    val bytes: Long
+    val bytes: Long,
 )
 
 @Serializable
@@ -59,15 +59,15 @@ data class EnableRequest(
     val version: String,
     val byoc: Boolean,
     val noFastEnable: Boolean = false,
-    val flavor: Map<String, String>
+    val flavor: Map<String, String>,
 )
 
 data class Counters(
     var hits: Long = 0,
-    var bytes: Long = 0
+    var bytes: Long = 0,
 )
 
 data class GCCounter(
     val count: Int,
-    val size: Long
+    val size: Long,
 )

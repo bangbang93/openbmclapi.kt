@@ -27,15 +27,15 @@ fun Application.configureRouting() {
     val config by inject<ClusterConfig>()
     val storage by inject<IStorage>()
     val counters by inject<Counters>()
-    
+
     install(AutoHeadResponse)
     routing {
         get("/") {
             call.respondText("OpenBMCLAPI Cluster - Kotlin Edition")
         }
-        
+
         clusterRoutes(config, storage, counters)
-        
+
         // Static plugin. Try to access `/static/index.html`
         staticResources("/static", "static")
     }
