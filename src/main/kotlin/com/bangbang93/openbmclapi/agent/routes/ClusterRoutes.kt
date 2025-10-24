@@ -4,13 +4,22 @@ import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import com.bangbang93.openbmclapi.agent.util.HashUtil
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.response.header
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondOutputStream
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 
-private val logger = LoggerFactory.getLogger("ClusterRoutes")
+private val logger = KotlinLogging.logger {}
+
+// 最大带宽测量大小（MB）
+private const val MAX_MEASURE_SIZE_MB = 200
 
 fun Route.clusterRoutes(
     config: ClusterConfig,
@@ -48,7 +57,7 @@ fun Route.clusterRoutes(
             counters.bytes += result.bytes
             counters.hits += result.hits
         } catch (e: Exception) {
-            logger.error("Error serving file: $hash", e)
+            logger.error(e) { "Error serving file: $hash" }
             call.respond(HttpStatusCode.InternalServerError, "Error serving file")
         }
     }
@@ -71,7 +80,7 @@ fun Route.clusterRoutes(
                 return@get
             }
 
-        if (size > 200) {
+        if (size > MAX_MEASURE_SIZE_MB) {
             call.respond(HttpStatusCode.BadRequest)
             return@get
         }

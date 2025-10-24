@@ -2,9 +2,7 @@ package com.bangbang93.openbmclapi.agent.storage
 
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.ktor.server.application.ApplicationCall
 
 interface IStorage {
     suspend fun init() {}

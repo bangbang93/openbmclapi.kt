@@ -1,31 +1,47 @@
 package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
-import com.bangbang93.openbmclapi.agent.model.*
+import com.bangbang93.openbmclapi.agent.model.Counters
+import com.bangbang93.openbmclapi.agent.model.EnableRequest
+import com.bangbang93.openbmclapi.agent.model.FileInfo
+import com.bangbang93.openbmclapi.agent.model.FileList
+import com.bangbang93.openbmclapi.agent.model.OpenbmclapiAgentConfiguration
+import com.bangbang93.openbmclapi.agent.model.SyncConfig
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import com.bangbang93.openbmclapi.agent.util.HashUtil
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
 import io.socket.client.IO
 import io.socket.client.Socket
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.slf4j.LoggerFactory
+import org.koin.core.annotation.Single
 import java.net.URI
 
+private val logger = KotlinLogging.logger {}
+
+@Single
 class ClusterService(
     private val config: ClusterConfig,
     private val storage: IStorage,
     private val tokenManager: TokenManager,
     private val counters: Counters,
-    private val version: String,
 ) {
-    private val logger = LoggerFactory.getLogger(ClusterService::class.java)
+    private val version = System.getProperty("app.version") ?: "0.0.1"
     private var socket: Socket? = null
     var isEnabled = false
     var wantEnable = false
@@ -77,32 +93,32 @@ class ClusterService(
             throw Exception("Storage is not ready")
         }
 
-        logger.info("Checking for missing files")
+        logger.info { "Checking for missing files" }
         val missingFiles = storage.getMissingFiles(fileList.files)
 
         if (missingFiles.isEmpty()) {
-            logger.info("No missing files")
+            logger.info { "No missing files" }
             return
         }
 
-        logger.info("Missing ${missingFiles.size} files, starting sync")
-        logger.info("Sync strategy: concurrency=${syncConfig.concurrency}")
+        logger.info { "Missing ${missingFiles.size} files, starting sync" }
+        logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
 
         val downloadJobs =
             missingFiles.map { file ->
                 CoroutineScope(Dispatchers.IO).async {
                     try {
                         downloadFile(file)
-                        logger.debug("Downloaded: ${file.path}")
+                        logger.debug { "Downloaded: ${file.path}" }
                     } catch (e: Exception) {
-                        logger.error("Failed to download ${file.path}", e)
+                        logger.error(e) { "Failed to download ${file.path}" }
                         throw e
                     }
                 }
             }
 
         val results = downloadJobs.awaitAll()
-        logger.info("Sync completed: ${results.size} files")
+        logger.info { "Sync completed: ${results.size} files" }
     }
 
     private suspend fun downloadFile(file: FileInfo) {
@@ -132,7 +148,7 @@ class ClusterService(
         socket =
             IO.socket(URI(config.clusterBmclapi), opts).apply {
                 on(Socket.EVENT_CONNECT) {
-                    logger.debug("Connected to server")
+                    logger.debug { "Connected to server" }
 
                     // Authenticate after connecting
                     CoroutineScope(Dispatchers.IO).launch {
@@ -143,20 +159,20 @@ class ClusterService(
 
                 on(Socket.EVENT_DISCONNECT) { args ->
                     val reason = args.firstOrNull()?.toString() ?: "unknown"
-                    logger.warn("Disconnected from server: $reason")
+                    logger.warn { "Disconnected from server: $reason" }
                     isEnabled = false
                 }
 
                 on("message") { args ->
-                    logger.info("Message: ${args.firstOrNull()}")
+                    logger.info { "Message: ${args.firstOrNull()}" }
                 }
 
                 on("exception") { args ->
-                    logger.error("Exception: ${args.firstOrNull()}")
+                    logger.error { "Exception: ${args.firstOrNull()}" }
                 }
 
                 on("warden-error") { args ->
-                    logger.warn("Warden error: ${args.firstOrNull()}")
+                    logger.warn { "Warden error: ${args.firstOrNull()}" }
                 }
 
                 connect()
@@ -166,7 +182,7 @@ class ClusterService(
     suspend fun enable() {
         if (isEnabled) return
 
-        logger.trace("Enabling cluster")
+        logger.trace { "Enabling cluster" }
 
         val enableRequest =
             EnableRequest(
@@ -185,7 +201,7 @@ class ClusterService(
         // For now, we'll mark as enabled
         isEnabled = true
         wantEnable = true
-        logger.info("Cluster enabled")
+        logger.info { "Cluster enabled" }
     }
 
     suspend fun disable() {
@@ -194,7 +210,7 @@ class ClusterService(
         wantEnable = false
         isEnabled = false
         socket?.disconnect()
-        logger.info("Cluster disabled")
+        logger.info { "Cluster disabled" }
     }
 
     fun close() {

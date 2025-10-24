@@ -3,19 +3,26 @@ package com.bangbang93.openbmclapi.agent.storage
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
 import com.bangbang93.openbmclapi.agent.util.HashUtil
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.ContentDisposition
+import io.ktor.http.content.OutgoingContent
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.response.header
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.fileSize
 
+private val logger = KotlinLogging.logger {}
+
 class FileStorage(private val cacheDir: String) : IStorage {
-    private val logger = LoggerFactory.getLogger(FileStorage::class.java)
 
     override suspend fun check(): Boolean =
         withContext(Dispatchers.IO) {
@@ -72,7 +79,7 @@ class FileStorage(private val cacheDir: String) : IStorage {
                     } else {
                         val relativePath = entry.relativeTo(File(cacheDir)).path
                         if (!fileSet.contains(relativePath)) {
-                            logger.info("Deleting expired file: ${entry.path}")
+                            logger.info { "Deleting expired file: ${entry.path}" }
                             size += entry.length()
                             entry.delete()
                             count++

@@ -1,6 +1,6 @@
 package com.bangbang93.openbmclapi.agent.config
 
-import io.ktor.server.application.*
+import io.ktor.server.application.Application
 
 data class ClusterConfig(
     val clusterId: String,
