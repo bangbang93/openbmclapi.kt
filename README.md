@@ -1,5 +1,7 @@
 # OpenBMCLAPI - Kotlin Edition
 
+[English](README.md) | [中文文档](README_CN.md)
+
 **Note**: This is a Kotlin/Ktor port of the original [bangbang93/openbmclapi](https://github.com/bangbang93/openbmclapi) project.
 
 For detailed documentation about this Kotlin implementation, see [README_KT.md](README_KT.md).

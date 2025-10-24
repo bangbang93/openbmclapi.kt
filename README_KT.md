@@ -1,5 +1,7 @@
 # OpenBMCLAPI - Kotlin Edition
 
+[English](README_KT.md) | [中文文档](README_KT_CN.md)
+
 A Kotlin/Ktor implementation of the OpenBMCLAPI cluster node, migrated from the original TypeScript/Node.js version at [bangbang93/openbmclapi](https://github.com/bangbang93/openbmclapi).
 
 ## What is OpenBMCLAPI?
