@@ -4,3 +4,18 @@ ktor:
             - com.bangbang93.openbmclapi.ApplicationKt.module
     deployment:
         port: 8080
+
+# OpenBMCLAPI Configuration
+# Most settings can be provided via environment variables as well
+# Environment variables take precedence over these settings
+#
+# Required: CLUSTER_ID, CLUSTER_SECRET
+# Optional: CLUSTER_IP, CLUSTER_PORT, CLUSTER_PUBLIC_PORT, etc.
+#
+# openbmclapi:
+#     cluster:
+#         id: your-cluster-id
+#         secret: your-cluster-secret
+#         port: 4000
+#         publicPort: 4000
+#         storage: file
