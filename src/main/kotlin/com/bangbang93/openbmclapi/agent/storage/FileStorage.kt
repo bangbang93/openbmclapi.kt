@@ -4,11 +4,9 @@ import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
 import com.bangbang93.openbmclapi.agent.util.HashUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.http.ContentType
+import io.ktor.http.ContentDisposition
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.ContentDisposition
-import io.ktor.http.content.OutgoingContent
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
@@ -23,7 +21,6 @@ import kotlin.io.path.fileSize
 private val logger = KotlinLogging.logger {}
 
 class FileStorage(private val cacheDir: String) : IStorage {
-
     override suspend fun check(): Boolean =
         withContext(Dispatchers.IO) {
             try {

@@ -1,7 +1,9 @@
 package com.bangbang93.openbmclapi.agent.util
 
+import io.socket.client.Ack
 import io.socket.client.Socket
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -12,16 +14,23 @@ suspend inline fun <reified T> Socket.emitAck(
     vararg args: T,
 ): Any? =
     suspendCoroutine { cont ->
+        // socket.io的参数只认JSONObject
         val jsonArgs = args.map { JSONObject(Json.encodeToString<T>(it)) }.toTypedArray()
         this.emit(
             event,
-            jsonArgs,
-        ) { args: Array<Any> ->
-            val err = args.firstOrNull()
-            if (err != null) {
-                cont.resumeWithException(Exception(err.toString()))
-            } else {
-                cont.resume(args[1])
-            }
-        }
+            *jsonArgs,
+            Ack { ackArgs: Array<Any?> ->
+                try {
+                    val arg = ackArgs.firstOrNull() as? JsonArray ?: return@Ack cont.resume(null)
+                    val err = arg.firstOrNull()
+                    if (err != null) {
+                        cont.resumeWithException(Exception(err.toString()))
+                    } else {
+                        cont.resume(arg.getOrNull(1))
+                    }
+                } catch (e: Exception) {
+                    cont.resumeWithException(e)
+                }
+            },
+        )
     }
