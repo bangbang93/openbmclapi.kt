@@ -109,40 +109,6 @@ java -jar build/libs/openbmclapi-agent-0.0.1-all.jar
 
 即将推出 - Docker 支持将在未来更新中添加。
 
-## API 端点
-
-### 文件下载
-```
-GET /download/{hash}?s={signature}&e={expiry}
-```
-
-通过哈希下载文件。需要有效的签名和过期时间。
-
-### 带宽测量
-```
-GET /measure/{size}?s={signature}&e={expiry}
-```
-
-返回 `size` MB 的测试数据用于带宽测量 (最大 200 MB)。
-
-### 健康检查
-```
-GET /
-```
-
-返回集群状态。
-
-## 架构
-
-Kotlin 实现遵循模块化架构:
-
-- **Configuration** (`config/`): 应用配置加载
-- **Models** (`model/`): API 通信的数据类
-- **Storage** (`storage/`): 存储抽象层和文件系统实现
-- **Service** (`service/`): 核心服务 (TokenManager, ClusterService)
-- **Routes** (`routes/`): HTTP 端点处理器
-- **Utilities** (`util/`): 哈希验证和签名验证
-
 ## 存储后端
 
 ### 文件存储 (默认)
@@ -174,29 +140,8 @@ cache/
 ### 主要区别
 
 1. **无集群/守护进程模式**: 简化为单进程模型
-2. **简化的 WebSocket**: 基本 WebSocket 支持 (完整的 Socket.IO 开发中)
-3. **仅文件存储**: 其他存储后端待实现
-4. **暂无 nginx 集成**: 通过 Ktor 直接提供文件服务
-
-## 依赖注入 - Koin Annotations
-
-本项目使用 Koin Annotations 进行依赖注入，自动生成依赖关系代码:
-
-```kotlin
-@Module
-@ComponentScan("com.bangbang93.openbmclapi")
-class AppModule
-
-@Single
-fun provideStorage(config: ClusterConfig): IStorage {
-    return FileStorage(...)
-}
-```
-
-优点:
-- 无需手动维护 Koin 模块
-- 编译时检查依赖
-- 自动生成绑定代码
+2. **仅文件存储**: 其他存储后端待实现
+3**无 nginx 集成**: 通过 Ktor 直接提供文件服务
 
 ## 代码规范
 
