@@ -1,6 +1,7 @@
 package com.bangbang93.openbmclapi.model
 
 import kotlinx.serialization.Serializable
+import org.koin.core.annotation.Single
 
 @Serializable
 data class FileInfo(
@@ -62,10 +63,11 @@ data class EnableRequest(
     val flavor: Map<String, String>,
 )
 
-data class Counters(
-    var hits: Long = 0,
-    var bytes: Long = 0,
-)
+@Single
+class Counters {
+    var hits: Long = 0
+    var bytes: Long = 0
+}
 
 data class GCCounter(
     val count: Int,

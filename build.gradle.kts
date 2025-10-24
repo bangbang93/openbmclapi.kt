@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.ktlint)
 }
 
-group = "com.bangbang93.openbmclapi"
+group = "com.bangbang93.openbmclapi.agent"
 version = "0.0.1"
 
 application {
@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.koin.logger.slf4j)
     implementation(libs.koin.annotations)
     ksp(libs.koin.ksp.compiler)
+    implementation(libs.kotlin.logging)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.serialization.kotlinx.json)
@@ -56,6 +57,4 @@ ktlint {
             entry.file.toString().contains("generated")
         }
     }
-    // Disable wildcard import check as Ktor uses them extensively
-    disabledRules.add("no-wildcard-imports")
 }

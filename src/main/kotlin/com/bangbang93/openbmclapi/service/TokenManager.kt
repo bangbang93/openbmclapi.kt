@@ -1,31 +1,43 @@
 package com.bangbang93.openbmclapi.service
 
+import com.bangbang93.openbmclapi.config.ClusterConfig
 import com.bangbang93.openbmclapi.model.ChallengeResponse
 import com.bangbang93.openbmclapi.model.TokenRequest
 import com.bangbang93.openbmclapi.model.TokenResponse
 import com.bangbang93.openbmclapi.util.HashUtil
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.parameter
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
-import org.slf4j.LoggerFactory
+import org.koin.core.annotation.Single
 import kotlin.time.Duration.Companion.minutes
 
+private val logger = KotlinLogging.logger {}
+
+@Single
 class TokenManager(
-    private val clusterId: String,
-    private val clusterSecret: String,
-    private val version: String,
-    private val prefixUrl: String,
+    config: ClusterConfig,
 ) {
-    private val logger = LoggerFactory.getLogger(TokenManager::class.java)
+    private val clusterId = config.clusterId
+    private val clusterSecret = config.clusterSecret
+    private val version = System.getProperty("app.version") ?: "0.0.1"
+    private val prefixUrl = config.clusterBmclapi
+
     private var token: String? = null
 
     private val client =
@@ -75,14 +87,14 @@ class TokenManager(
 
     private fun scheduleRefreshToken(ttl: Long) {
         val next = maxOf(ttl - 10.minutes.inWholeMilliseconds, ttl / 2)
-        logger.trace("Scheduling token refresh in ${next}ms")
+        logger.trace { "Scheduling token refresh in ${next}ms" }
 
         CoroutineScope(Dispatchers.IO).launch {
             delay(next)
             try {
                 refreshToken()
             } catch (e: Exception) {
-                logger.error("Failed to refresh token", e)
+                logger.error(e) { "Failed to refresh token" }
             }
         }
     }
@@ -100,7 +112,7 @@ class TokenManager(
                 )
             }.body<TokenResponse>()
 
-        logger.debug("Successfully refreshed token")
+        logger.debug { "Successfully refreshed token" }
         scheduleRefreshToken(tokenResponse.ttl)
         token = tokenResponse.token
     }

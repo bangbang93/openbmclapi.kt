@@ -2,19 +2,26 @@ package com.bangbang93.openbmclapi.service
 
 import com.bangbang93.openbmclapi.model.Counters
 import com.bangbang93.openbmclapi.model.KeepAliveRequest
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.socket.client.Socket
-import kotlinx.coroutines.*
-import org.slf4j.LoggerFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import java.time.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
+
+private val logger = KotlinLogging.logger {}
 
 class KeepaliveService(
     private val interval: Duration = 1.minutes,
     private val clusterService: ClusterService,
     private val counters: Counters,
 ) {
-    private val logger = LoggerFactory.getLogger(KeepaliveService::class.java)
     private var job: Job? = null
     private var keepAliveError = 0
     private var socket: Socket? = null
@@ -34,13 +41,14 @@ class KeepaliveService(
         job =
             CoroutineScope(Dispatchers.IO).launch {
                 delay(interval)
-                logger.trace("Starting keep alive")
+                logger.trace { "Starting keep alive" }
                 try {
                     emitKeepAlive()
                 } catch (e: Exception) {
-                    logger.error("Keep alive failed", e)
+                    logger.error(e) { "Keep alive failed" }
                 }
             }
+    }
     }
 
     private suspend fun emitKeepAlive() {
@@ -48,20 +56,20 @@ class KeepaliveService(
             withTimeout(10000) { // 10 seconds timeout
                 val status = keepAlive()
                 if (!status) {
-                    logger.error("Kicked by server")
+                    logger.error { "Kicked by server" }
                     restart()
                 }
                 keepAliveError = 0
             }
         } catch (e: TimeoutCancellationException) {
             keepAliveError++
-            logger.error("Keep alive timeout")
+            logger.error { "Keep alive timeout" }
             if (keepAliveError >= 3) {
                 restart()
             }
         } catch (e: Exception) {
             keepAliveError++
-            logger.error("Keep alive error", e)
+            logger.error(e) { "Keep alive error" }
             if (keepAliveError >= 3) {
                 restart()
             }
@@ -78,22 +86,23 @@ class KeepaliveService(
             throw Exception("Not connected to server")
         }
 
-        val currentCounters = Counters(counters.hits, counters.bytes)
+        val currentHits = counters.hits
+        val currentBytes = counters.bytes
 
         val request =
             KeepAliveRequest(
                 time = Instant.now().toString(),
-                hits = currentCounters.hits,
-                bytes = currentCounters.bytes,
+                hits = currentHits,
+                bytes = currentBytes,
             )
 
         // In a real implementation, this would emit to the socket and wait for acknowledgment
         // For now, we'll simulate success
-        logger.info("Keep alive success, served ${currentCounters.hits} files, ${currentCounters.bytes} bytes")
+        logger.info { "Keep alive success, served $currentHits files, $currentBytes bytes" }
 
         // Reset counters
-        counters.hits -= currentCounters.hits
-        counters.bytes -= currentCounters.bytes
+        counters.hits -= currentHits
+        counters.bytes -= currentBytes
 
         return true
     }
@@ -107,8 +116,9 @@ class KeepaliveService(
                 clusterService.enable()
             }
         } catch (e: Exception) {
-            logger.error("Restart failed", e)
+            logger.error(e) { "Restart failed" }
             // In production, this would exit the application
         }
     }
 }
+
