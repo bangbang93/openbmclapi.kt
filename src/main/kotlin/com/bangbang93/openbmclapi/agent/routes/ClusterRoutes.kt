@@ -13,12 +13,15 @@ import io.ktor.server.response.respond
 import io.ktor.server.response.respondOutputStream
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.plusAssign
 
 private val logger = KotlinLogging.logger {}
 
 // 最大带宽测量大小（MB）
 private const val MAX_MEASURE_SIZE_MB = 200
 
+@OptIn(ExperimentalAtomicApi::class)
 fun Route.clusterRoutes(
     config: ClusterConfig,
     storage: IStorage,

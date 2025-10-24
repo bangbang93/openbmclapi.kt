@@ -2,6 +2,8 @@ package com.bangbang93.openbmclapi.agent.model
 
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
+import kotlin.concurrent.atomics.AtomicLong
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 @Serializable
 data class FileInfo(
@@ -63,10 +65,11 @@ data class EnableRequest(
     val flavor: Map<String, String>,
 )
 
+@OptIn(ExperimentalAtomicApi::class)
 @Single
 class Counters {
-    var hits: Long = 0
-    var bytes: Long = 0
+    val hits = AtomicLong(0L)
+    val bytes = AtomicLong(0L)
 }
 
 data class GCCounter(

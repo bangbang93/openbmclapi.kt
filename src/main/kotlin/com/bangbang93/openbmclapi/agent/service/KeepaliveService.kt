@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.model.KeepAliveRequest
+import com.bangbang93.openbmclapi.agent.util.emitAck
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +13,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import java.time.Instant
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.minusAssign
+import kotlin.concurrent.atomics.plusAssign
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -24,7 +28,7 @@ class KeepaliveService(
 ) {
     private var job: Job? = null
     private var keepAliveError = 0
-    private var socket: Socket? = null
+    private lateinit var socket: Socket
 
     fun start(socket: Socket) {
         this.socket = socket
@@ -52,7 +56,8 @@ class KeepaliveService(
 
     private suspend fun emitKeepAlive() {
         try {
-            withTimeout(10000) { // 10 seconds timeout
+            withTimeout(10000) {
+                // 10 seconds timeout
                 val status = keepAlive()
                 if (!status) {
                     logger.error { "Kicked by server" }
@@ -77,16 +82,14 @@ class KeepaliveService(
         }
     }
 
+    @OptIn(ExperimentalAtomicApi::class)
     private suspend fun keepAlive(): Boolean {
         if (!clusterService.isEnabled) {
             throw Exception("Node is not enabled")
         }
-        if (socket == null) {
-            throw Exception("Not connected to server")
-        }
 
-        val currentHits = counters.hits
-        val currentBytes = counters.bytes
+        val currentHits = counters.hits.load()
+        val currentBytes = counters.bytes.load()
 
         val request =
             KeepAliveRequest(
@@ -95,8 +98,7 @@ class KeepaliveService(
                 bytes = currentBytes,
             )
 
-        // In a real implementation, this would emit to the socket and wait for acknowledgment
-        // For now, we'll simulate success
+        socket.emitAck("keep-alive", request)
         logger.info { "Keep alive success, served $currentHits files, $currentBytes bytes" }
 
         // Reset counters

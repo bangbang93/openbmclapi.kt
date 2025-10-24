@@ -1,10 +1,9 @@
 [versions]
-koin = "3.5.6"
-koin-annotations = "1.4.0"
-koin-ksp = "1.4.0"
-kotlin = "2.1.0"
+koin = "4.1.1"
+koin-annotations = "2.3.0"
+kotlin = "2.2.20"
 kotlin-logging = "7.0.3"
-ksp = "2.1.0-1.0.29"
+ksp = "2.2.20-2.0.4"
 ktor = "3.3.1"
 logback = "1.4.14"
 kotlinx-coroutines = "1.10.1"
@@ -19,7 +18,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin" }
 koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin" }
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
-koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-ksp" }
+koin-ksp-compiler = { module = "io.insert-koin:koin-ksp-compiler", version.ref = "koin-annotations" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
 ktor-server-content-negotiation = { module = "io.ktor:ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor" }
