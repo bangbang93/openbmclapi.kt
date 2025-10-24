@@ -77,7 +77,7 @@ class BootstrapService(
             logger.info { "Cluster enabled, serving ${files.files.size} files" }
 
             // Start keepalive
-            // keepaliveService.start(clusterService.socket)
+            keepaliveService.start(clusterService.socket)
 
             // Schedule periodic file check
             scheduleFileCheck(files.files.maxOfOrNull { it.mtime } ?: 0)

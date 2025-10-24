@@ -39,7 +39,7 @@ class ClusterService(
     private val tokenManager: TokenManager,
     private val httpClient: HttpClient,
 ) {
-    private lateinit var socket: Socket
+    lateinit var socket: Socket
     var isEnabled = false
     var wantEnable = false
 
