@@ -6,19 +6,6 @@ Kotlin/Ktor 实现的 OpenBMCLAPI 集群节点，从 [bangbang93/openbmclapi](ht
 
 OpenBMCLAPI 是一个分布式文件分发网络，旨在为中国用户加速 Minecraft 资源下载。它通过创建分布式节点网络来高效提供文件，解决从 Amazon S3 下载速度慢的问题。
 
-## 特性
-
-- ✅ 从 BMCLAPI 主控服务器同步文件
-- ✅ 基于哈希的文件验证 (MD5/SHA-1)
-- ✅ 基于签名的文件下载认证
-- ✅ 基于令牌的 API 认证，自动刷新
-- ✅ 本地文件存储后端
-- ✅ 带宽测量端点
-- ✅ 通过环境变量或 application.yaml 配置
-- 🚧 基于 WebSocket 的集群通信
-- 🚧 Keepalive 机制
-- 🚧 多种存储后端 (文件、MinIO、OSS、WebDAV)
-- 🚧 UPNP 端口映射支持
 
 ## 环境要求
 
@@ -46,8 +33,6 @@ OpenBMCLAPI 是一个分布式文件分发网络，旨在为中国用户加速 M
 | `CLUSTER_PUBLIC_PORT` | `CLUSTER_PORT` | 对外端口 (如果与监听端口不同) |
 | `CLUSTER_BYOC` | false | 自带证书模式 |
 | `DISABLE_ACCESS_LOG` | false | 禁用访问日志 |
-| `ENABLE_NGINX` | false | 使用 nginx 提供文件服务 |
-| `ENABLE_UPNP` | false | 启用 UPNP 端口映射 |
 | `CLUSTER_STORAGE` | file | 存储类型: `file`, `minio`, `oss`, `webdav` |
 | `SSL_KEY` | - | SSL 私钥 (BYOC 模式) |
 | `SSL_CERT` | - | SSL 证书 (BYOC 模式) |
@@ -256,20 +241,8 @@ MIT License - 参见 LICENSE 文件
 
 ## 状态
 
-本项目正在积极开发中。以下特性已实现:
+本项目正在积极开发中。以下特性待实现:
 
-- ✅ 核心配置系统
-- ✅ 基于令牌的认证
-- ✅ 文件存储后端
-- ✅ 带签名验证的下载端点
-- ✅ 哈希验证
-- ✅ Koin Annotations 依赖注入
-- ✅ ktlint 代码规范
-- 🚧 WebSocket 集群通信
-- 🚧 文件同步
-- 🚧 Keepalive 机制
-- ⏳ 其他存储后端
-- ⏳ UPNP 支持
-- ⏳ Nginx 集成
+- 其他存储后端
+- UPNP 支持
 
-图例: ✅ 完成 | 🚧 进行中 | ⏳ 计划中
