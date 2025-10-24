@@ -1,8 +1,8 @@
-package com.bangbang93.openbmclapi.service
+package com.bangbang93.openbmclapi.agent.service
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
-import com.bangbang93.openbmclapi.model.Counters
-import com.bangbang93.openbmclapi.storage.IStorage
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.model.Counters
+import com.bangbang93.openbmclapi.agent.storage.IStorage
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration.Companion.minutes

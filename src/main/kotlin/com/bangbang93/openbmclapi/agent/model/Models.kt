@@ -1,4 +1,4 @@
-package com.bangbang93.openbmclapi.model
+package com.bangbang93.openbmclapi.agent.model
 
 import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single

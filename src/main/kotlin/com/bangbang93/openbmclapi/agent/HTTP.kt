@@ -1,4 +1,4 @@
-package com.bangbang93.openbmclapi
+package com.bangbang93.openbmclapi.agent
 
 import io.ktor.http.*
 import io.ktor.http.content.*

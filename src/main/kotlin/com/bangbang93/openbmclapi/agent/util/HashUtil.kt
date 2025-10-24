@@ -1,4 +1,4 @@
-package com.bangbang93.openbmclapi.util
+package com.bangbang93.openbmclapi.agent.util
 
 import java.io.File
 import java.security.MessageDigest

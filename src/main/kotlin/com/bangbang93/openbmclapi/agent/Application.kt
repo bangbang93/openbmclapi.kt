@@ -1,7 +1,7 @@
-package com.bangbang93.openbmclapi
+package com.bangbang93.openbmclapi.agent
 
-import com.bangbang93.openbmclapi.config.loadConfig
-import com.bangbang93.openbmclapi.service.BootstrapService
+import com.bangbang93.openbmclapi.agent.config.loadConfig
+import com.bangbang93.openbmclapi.agent.service.BootstrapService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStopping

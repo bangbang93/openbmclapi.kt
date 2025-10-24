@@ -1,9 +1,9 @@
-package com.bangbang93.openbmclapi
+package com.bangbang93.openbmclapi.agent
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
-import com.bangbang93.openbmclapi.model.Counters
-import com.bangbang93.openbmclapi.routes.clusterRoutes
-import com.bangbang93.openbmclapi.storage.IStorage
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.model.Counters
+import com.bangbang93.openbmclapi.agent.routes.clusterRoutes
+import com.bangbang93.openbmclapi.agent.storage.IStorage
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.serialization.kotlinx.json.*

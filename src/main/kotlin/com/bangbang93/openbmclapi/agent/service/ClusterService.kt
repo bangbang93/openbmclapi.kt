@@ -1,9 +1,9 @@
-package com.bangbang93.openbmclapi.service
+package com.bangbang93.openbmclapi.agent.service
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
-import com.bangbang93.openbmclapi.model.*
-import com.bangbang93.openbmclapi.storage.IStorage
-import com.bangbang93.openbmclapi.util.HashUtil
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.model.*
+import com.bangbang93.openbmclapi.agent.storage.IStorage
+import com.bangbang93.openbmclapi.agent.util.HashUtil
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*

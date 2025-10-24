@@ -1,10 +1,10 @@
-package com.bangbang93.openbmclapi.service
+package com.bangbang93.openbmclapi.agent.service
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
-import com.bangbang93.openbmclapi.model.ChallengeResponse
-import com.bangbang93.openbmclapi.model.TokenRequest
-import com.bangbang93.openbmclapi.model.TokenResponse
-import com.bangbang93.openbmclapi.util.HashUtil
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.model.ChallengeResponse
+import com.bangbang93.openbmclapi.agent.model.TokenRequest
+import com.bangbang93.openbmclapi.agent.model.TokenResponse
+import com.bangbang93.openbmclapi.agent.util.HashUtil
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

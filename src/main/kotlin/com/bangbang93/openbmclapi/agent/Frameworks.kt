@@ -1,6 +1,6 @@
-package com.bangbang93.openbmclapi
+package com.bangbang93.openbmclapi.agent
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import org.koin.dsl.module

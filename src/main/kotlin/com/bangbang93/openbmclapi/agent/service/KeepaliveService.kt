@@ -1,7 +1,7 @@
-package com.bangbang93.openbmclapi.service
+package com.bangbang93.openbmclapi.agent.service
 
-import com.bangbang93.openbmclapi.model.Counters
-import com.bangbang93.openbmclapi.model.KeepAliveRequest
+import com.bangbang93.openbmclapi.agent.model.Counters
+import com.bangbang93.openbmclapi.agent.model.KeepAliveRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope

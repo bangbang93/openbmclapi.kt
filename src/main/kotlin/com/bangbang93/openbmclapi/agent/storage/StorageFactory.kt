@@ -1,6 +1,6 @@
-package com.bangbang93.openbmclapi.storage
+package com.bangbang93.openbmclapi.agent.storage
 
-import com.bangbang93.openbmclapi.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import org.koin.core.annotation.Single
 import java.io.File
 

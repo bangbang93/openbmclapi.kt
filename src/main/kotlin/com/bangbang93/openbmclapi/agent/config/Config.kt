@@ -1,4 +1,4 @@
-package com.bangbang93.openbmclapi.config
+package com.bangbang93.openbmclapi.agent.config
 
 import io.ktor.server.application.*
 
