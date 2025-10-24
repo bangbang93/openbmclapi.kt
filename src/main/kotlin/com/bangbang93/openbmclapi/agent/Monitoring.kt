@@ -1,22 +1,11 @@
 package com.bangbang93.openbmclapi.agent
 
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.application.*
-import io.ktor.server.http.content.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.cachingheaders.*
-import io.ktor.server.plugins.callid.*
-import io.ktor.server.plugins.calllogging.*
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.partialcontent.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import org.slf4j.event.*
+import io.ktor.http.HttpHeaders
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callid.callIdMdc
+import io.ktor.server.plugins.calllogging.CallLogging
 
 fun Application.configureMonitoring() {
     install(CallId) {

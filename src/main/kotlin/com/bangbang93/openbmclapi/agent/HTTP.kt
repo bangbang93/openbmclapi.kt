@@ -1,22 +1,14 @@
 package com.bangbang93.openbmclapi.agent
 
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.application.*
-import io.ktor.server.http.content.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.cachingheaders.*
-import io.ktor.server.plugins.callid.*
-import io.ktor.server.plugins.calllogging.*
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.partialcontent.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import org.slf4j.event.*
+import io.ktor.http.CacheControl
+import io.ktor.http.ContentType
+import io.ktor.http.content.CachingOptions
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.plugins.cachingheaders.CachingHeaders
+import io.ktor.server.plugins.compression.Compression
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.partialcontent.PartialContent
 
 fun Application.configureHTTP() {
     install(PartialContent) {
@@ -29,7 +21,7 @@ fun Application.configureHTTP() {
     }
     install(Compression)
     install(CachingHeaders) {
-        options { call, outgoingContent ->
+        options { _, outgoingContent ->
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
                 else -> null

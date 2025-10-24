@@ -1,5 +1,6 @@
 package com.bangbang93.openbmclapi.agent.service
 
+import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.model.EnableRequest
@@ -26,7 +27,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
@@ -42,6 +42,7 @@ class ClusterService(
     private val counters: Counters,
 ) {
     private val version = System.getProperty("app.version") ?: "0.0.1"
+    private val userAgent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/$version"
     private var socket: Socket? = null
     var isEnabled = false
     var wantEnable = false
@@ -62,7 +63,7 @@ class ClusterService(
         val response =
             client.get("${config.clusterBmclapi}/openbmclapi/files") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-                header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
+                header(HttpHeaders.UserAgent, userAgent)
                 if (lastModified != null) {
                     parameter("lastModified", lastModified)
                 }
@@ -77,12 +78,12 @@ class ClusterService(
         return response.body<FileList>()
     }
 
-    suspend fun getConfiguration(): OpenbmclapiAgentConfiguration {
-        return client.get("${config.clusterBmclapi}/openbmclapi/configuration") {
-            header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-            header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
-        }.body()
-    }
+    suspend fun getConfiguration(): OpenbmclapiAgentConfiguration =
+        client
+            .get("${config.clusterBmclapi}/openbmclapi/configuration") {
+                header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+                header(HttpHeaders.UserAgent, userAgent)
+            }.body()
 
     suspend fun syncFiles(
         fileList: FileList,
@@ -125,7 +126,7 @@ class ClusterService(
         val response =
             client.get("${config.clusterBmclapi}${file.path}") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-                header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
+                header(HttpHeaders.UserAgent, userAgent)
             }
 
         val content = response.body<ByteArray>()

@@ -1,5 +1,6 @@
 package com.bangbang93.openbmclapi.agent.service
 
+import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.storage.IStorage
@@ -27,7 +28,7 @@ class BootstrapService(
     private var checkFileJob: Job? = null
 
     suspend fun bootstrap() {
-        logger.info { "Booting OpenBMCLAPI Kotlin $version" }
+        logger.info { "Booting OpenBMCLAPI Kotlin $version, protocol version: $AGENT_PROTOCOL_VERSION" }
 
         // Get initial token
         tokenManager.getToken()

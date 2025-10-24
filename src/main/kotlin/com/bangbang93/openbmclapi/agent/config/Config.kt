@@ -1,5 +1,6 @@
 package com.bangbang93.openbmclapi.agent.config
 
+import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.Application
 
 data class ClusterConfig(
@@ -32,62 +33,60 @@ data class ConfigFlavor(
 
 fun Application.loadConfig(): ClusterConfig {
     val env = environment.config
+    // 使用 dotenv-kotlin 加载 .env（若不存在则忽略），优先级低于 Ktor config，但高于系统默认值
+    val dotenv: Dotenv = Dotenv.configure().ignoreIfMissing().load()
+
+    // Helper: 返回第一个非空且非空白的值（按提供顺序）
+    fun firstNonBlank(vararg suppliers: () -> String?): String? {
+        for (s in suppliers) {
+            val v = s()?.takeIf { it.isNotBlank() }
+            if (v != null) return v
+        }
+        return null
+    }
+
+    // Helper: 尝试按顺序查找字符串值（ktor config, dotenv, env, system prop）
+    fun lookupString(
+        ktorKey: String?,
+        dotenvKey: String?,
+    ): String? =
+        firstNonBlank(
+            { ktorKey?.let { env.propertyOrNull(it)?.getString() } },
+            { dotenvKey?.let { dotenv[it] } },
+            { System.getenv(dotenvKey ?: "")?.takeIf { it.isNotBlank() } },
+            { System.getProperty(dotenvKey ?: "")?.takeIf { it.isNotBlank() } },
+        )
 
     return ClusterConfig(
         clusterId =
-            env.propertyOrNull("openbmclapi.cluster.id")?.getString()
-                ?: System.getenv("CLUSTER_ID")
-                ?: System.getProperty("CLUSTER_ID")
-                ?: "test-cluster",
+            lookupString("openbmclapi.cluster.id", "CLUSTER_ID") ?: "test-cluster",
         // Default for testing
         clusterSecret =
-            env.propertyOrNull("openbmclapi.cluster.secret")?.getString()
-                ?: System.getenv("CLUSTER_SECRET")
-                ?: System.getProperty("CLUSTER_SECRET")
-                ?: "test-secret",
+            lookupString("openbmclapi.cluster.secret", "CLUSTER_SECRET") ?: "test-secret",
         // Default for testing
         clusterIp =
-            env.propertyOrNull("openbmclapi.cluster.ip")?.getString()
-                ?: System.getenv("CLUSTER_IP"),
+            lookupString("openbmclapi.cluster.ip", "CLUSTER_IP"),
         port =
-            env.propertyOrNull("openbmclapi.cluster.port")?.getString()?.toIntOrNull()
-                ?: System.getenv("CLUSTER_PORT")?.toIntOrNull()
-                ?: 4000,
+            lookupString("openbmclapi.cluster.port", "CLUSTER_PORT")?.toIntOrNull() ?: 4000,
         clusterPublicPort =
-            env.propertyOrNull("openbmclapi.cluster.publicPort")?.getString()?.toIntOrNull()
-                ?: System.getenv("CLUSTER_PUBLIC_PORT")?.toIntOrNull()
-                ?: env.propertyOrNull("openbmclapi.cluster.port")?.getString()?.toIntOrNull()
-                ?: System.getenv("CLUSTER_PORT")?.toIntOrNull()
+            lookupString("openbmclapi.cluster.publicPort", "CLUSTER_PUBLIC_PORT")?.toIntOrNull()
+                ?: lookupString("openbmclapi.cluster.port", "CLUSTER_PORT")?.toIntOrNull()
                 ?: 4000,
         byoc =
-            env.propertyOrNull("openbmclapi.cluster.byoc")?.getString()?.toBoolean()
-                ?: System.getenv("CLUSTER_BYOC")?.toBoolean()
-                ?: false,
+            lookupString("openbmclapi.cluster.byoc", "CLUSTER_BYOC")?.toBoolean() ?: false,
         disableAccessLog =
-            env.propertyOrNull("openbmclapi.cluster.disableAccessLog")?.getString()?.toBoolean()
-                ?: System.getenv("DISABLE_ACCESS_LOG")?.toBoolean()
-                ?: false,
+            lookupString("openbmclapi.cluster.disableAccessLog", "DISABLE_ACCESS_LOG")?.toBoolean() ?: false,
         enableNginx =
-            env.propertyOrNull("openbmclapi.cluster.enableNginx")?.getString()?.toBoolean()
-                ?: System.getenv("ENABLE_NGINX")?.toBoolean()
-                ?: false,
+            lookupString("openbmclapi.cluster.enableNginx", "ENABLE_NGINX")?.toBoolean() ?: false,
         enableUpnp =
-            env.propertyOrNull("openbmclapi.cluster.enableUpnp")?.getString()?.toBoolean()
-                ?: System.getenv("ENABLE_UPNP")?.toBoolean()
-                ?: false,
+            lookupString("openbmclapi.cluster.enableUpnp", "ENABLE_UPNP")?.toBoolean() ?: false,
         storage =
-            env.propertyOrNull("openbmclapi.storage.type")?.getString()
-                ?: System.getenv("CLUSTER_STORAGE")
-                ?: "file",
+            lookupString("openbmclapi.storage.type", "CLUSTER_STORAGE") ?: "file",
         sslKey =
-            env.propertyOrNull("openbmclapi.ssl.key")?.getString()
-                ?: System.getenv("SSL_KEY"),
+            lookupString("openbmclapi.ssl.key", "SSL_KEY"),
         sslCert =
-            env.propertyOrNull("openbmclapi.ssl.cert")?.getString()
-                ?: System.getenv("SSL_CERT"),
+            lookupString("openbmclapi.ssl.cert", "SSL_CERT"),
         clusterBmclapi =
-            env.propertyOrNull("openbmclapi.cluster.bmclapi")?.getString()
-                ?: System.getenv("CLUSTER_BMCLAPI")
-                ?: "https://openbmclapi.bangbang93.com",
+            lookupString("openbmclapi.cluster.bmclapi", "CLUSTER_BMCLAPI") ?: "https://openbmclapi.bangbang93.com",
     )
 }

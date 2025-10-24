@@ -8,8 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.response.header
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondOutputStream
@@ -34,7 +32,8 @@ fun Route.clusterRoutes(
             }
 
         val query =
-            call.request.queryParameters.entries()
+            call.request.queryParameters
+                .entries()
                 .associate { it.key to (it.value.firstOrNull() ?: "") }
 
         val signValid = HashUtil.checkSign(hash, config.clusterSecret, query)
@@ -64,7 +63,8 @@ fun Route.clusterRoutes(
 
     get("/measure/{size}") {
         val query =
-            call.request.queryParameters.entries()
+            call.request.queryParameters
+                .entries()
                 .associate { it.key to (it.value.firstOrNull() ?: "") }
 
         val path = "/measure/${call.parameters["size"]}"

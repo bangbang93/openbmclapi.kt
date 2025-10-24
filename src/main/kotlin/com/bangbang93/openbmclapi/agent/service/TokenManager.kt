@@ -1,5 +1,6 @@
 package com.bangbang93.openbmclapi.agent.service
 
+import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import com.bangbang93.openbmclapi.agent.model.ChallengeResponse
 import com.bangbang93.openbmclapi.agent.model.TokenRequest
@@ -36,6 +37,7 @@ class TokenManager(
     private val clusterId = config.clusterId
     private val clusterSecret = config.clusterSecret
     private val version = System.getProperty("app.version") ?: "0.0.1"
+    private val userAgent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/$version"
     private val prefixUrl = config.clusterBmclapi
 
     private var token: String? = null
@@ -61,25 +63,27 @@ class TokenManager(
 
     private suspend fun fetchToken(): String {
         val challengeResponse =
-            client.get("$prefixUrl/openbmclapi-agent/challenge") {
-                parameter("clusterId", clusterId)
-                header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
-            }.body<ChallengeResponse>()
+            client
+                .get("$prefixUrl/openbmclapi-agent/challenge") {
+                    parameter("clusterId", clusterId)
+                    header(HttpHeaders.UserAgent, userAgent)
+                }.body<ChallengeResponse>()
 
         val signature = HashUtil.createHmacSha256(clusterSecret, challengeResponse.challenge)
 
         val tokenResponse =
-            client.post("$prefixUrl/openbmclapi-agent/token") {
-                contentType(ContentType.Application.Json)
-                header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
-                setBody(
-                    TokenRequest(
-                        clusterId = clusterId,
-                        challenge = challengeResponse.challenge,
-                        signature = signature,
-                    ),
-                )
-            }.body<TokenResponse>()
+            client
+                .post("$prefixUrl/openbmclapi-agent/token") {
+                    contentType(ContentType.Application.Json)
+                    header(HttpHeaders.UserAgent, userAgent)
+                    setBody(
+                        TokenRequest(
+                            clusterId = clusterId,
+                            challenge = challengeResponse.challenge,
+                            signature = signature,
+                        ),
+                    )
+                }.body<TokenResponse>()
 
         scheduleRefreshToken(tokenResponse.ttl)
         return tokenResponse.token
@@ -101,16 +105,17 @@ class TokenManager(
 
     private suspend fun refreshToken() {
         val tokenResponse =
-            client.post("$prefixUrl/openbmclapi-agent/token") {
-                contentType(ContentType.Application.Json)
-                header(HttpHeaders.UserAgent, "openbmclapi-cluster/$version")
-                setBody(
-                    TokenRequest(
-                        clusterId = clusterId,
-                        token = token,
-                    ),
-                )
-            }.body<TokenResponse>()
+            client
+                .post("$prefixUrl/openbmclapi-agent/token") {
+                    contentType(ContentType.Application.Json)
+                    header(HttpHeaders.UserAgent, userAgent)
+                    setBody(
+                        TokenRequest(
+                            clusterId = clusterId,
+                            token = token,
+                        ),
+                    )
+                }.body<TokenResponse>()
 
         logger.debug { "Successfully refreshed token" }
         scheduleRefreshToken(tokenResponse.ttl)

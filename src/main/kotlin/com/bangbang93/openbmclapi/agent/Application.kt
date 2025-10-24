@@ -14,7 +14,8 @@ import org.koin.core.context.GlobalContext
 private val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    io.ktor.server.netty.EngineMain
+        .main(args)
 }
 
 fun Application.module() {
@@ -47,7 +48,7 @@ fun Application.module() {
         }
 
         // Register shutdown hook
-        environment.monitor.subscribe(ApplicationStopping) {
+        monitor.subscribe(ApplicationStopping) {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     val koin = GlobalContext.get()
