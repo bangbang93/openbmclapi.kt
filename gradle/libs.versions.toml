@@ -11,6 +11,8 @@ kotlinx-coroutines = "1.10.1"
 socket-io = "2.1.1"
 ktlint = "12.1.2"
 dotenv = "6.3.1"
+avro4k = "2.6.0"
+zstd-jni = "1.5.7-6"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -41,6 +43,8 @@ socket-io-client = { module = "io.socket:socket.io-client", version.ref = "socke
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 dotenvKotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv" }
+avro4k-core = { module = "com.github.avro-kotlin.avro4k:avro4k-core", version.ref = "avro4k" }
+zstd-jni = { module = "com.github.luben:zstd-jni", version.ref = "zstd-jni" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

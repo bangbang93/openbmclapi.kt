@@ -9,6 +9,9 @@ import com.bangbang93.openbmclapi.agent.model.OpenbmclapiAgentConfiguration
 import com.bangbang93.openbmclapi.agent.model.SyncConfig
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import com.bangbang93.openbmclapi.agent.util.HashUtil
+import com.bangbang93.openbmclapi.agent.util.emitAck
+import com.github.avrokotlin.avro4k.Avro
+import com.github.luben.zstd.Zstd.decompress
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromByteArray
 import org.koin.core.annotation.Single
 import java.net.URI
 
@@ -36,9 +40,7 @@ class ClusterService(
     private val tokenManager: TokenManager,
     private val httpClient: HttpClient,
 ) {
-    private val version = System.getProperty("app.version") ?: "0.0.1"
-    private val userAgent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/$version"
-    private var socket: Socket? = null
+    private lateinit var socket: Socket
     var isEnabled = false
     var wantEnable = false
 
@@ -46,7 +48,6 @@ class ClusterService(
         val response =
             httpClient.get("${config.clusterBmclapi}/openbmclapi/files") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-                header(HttpHeaders.UserAgent, userAgent)
                 if (lastModified != null) {
                     parameter("lastModified", lastModified)
                 }
@@ -56,16 +57,14 @@ class ClusterService(
             return FileList(emptyList())
         }
 
-        // Note: In the original, this would be decompressed with zstd
-        // For now, we'll handle JSON directly
-        return response.body<FileList>()
+        val body = response.body<ByteArray>()
+        return Avro.decodeFromByteArray<FileList>(decompress(body, 20 * 1024 * 1024))
     }
 
     suspend fun getConfiguration(): OpenbmclapiAgentConfiguration =
         httpClient
             .get("${config.clusterBmclapi}/openbmclapi/configuration") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-                header(HttpHeaders.UserAgent, userAgent)
             }.body()
 
     suspend fun syncFiles(
@@ -109,7 +108,6 @@ class ClusterService(
         val response =
             httpClient.get("${config.clusterBmclapi}${file.path}") {
                 header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-                header(HttpHeaders.UserAgent, userAgent)
             }
 
         val content = response.body<ByteArray>()
@@ -121,24 +119,17 @@ class ClusterService(
         storage.writeFile(HashUtil.hashToFilename(file.hash), content, file)
     }
 
-    fun connect() {
-        if (socket?.connected() == true) return
-
+    suspend fun connect() {
         val opts =
             IO.Options().apply {
                 transports = arrayOf("websocket")
+                auth = mapOf("token" to tokenManager.getToken())
             }
 
         socket =
             IO.socket(URI(config.clusterBmclapi), opts).apply {
                 on(Socket.EVENT_CONNECT) {
                     logger.debug { "Connected to server" }
-
-                    // Authenticate after connecting
-                    CoroutineScope(Dispatchers.IO).launch {
-                        val token = tokenManager.getToken()
-                        emit("authenticate", token)
-                    }
                 }
 
                 on(Socket.EVENT_DISCONNECT) { args ->
@@ -172,7 +163,7 @@ class ClusterService(
             EnableRequest(
                 host = config.clusterIp,
                 port = config.clusterPublicPort,
-                version = version,
+                version = AGENT_PROTOCOL_VERSION,
                 byoc = config.byoc,
                 flavor =
                     mapOf(
@@ -180,6 +171,8 @@ class ClusterService(
                         "storage" to config.flavor.storage,
                     ),
             )
+
+        socket.emitAck("enable", enableRequest)
 
         // Note: In a real implementation, this would use socket.emit with acknowledgment
         // For now, we'll mark as enabled
@@ -189,11 +182,9 @@ class ClusterService(
     }
 
     suspend fun disable() {
-        if (socket == null) return
-
         wantEnable = false
         isEnabled = false
-        socket?.disconnect()
+        socket.disconnect()
         logger.info { "Cluster disabled" }
     }
 
