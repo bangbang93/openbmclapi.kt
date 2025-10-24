@@ -1,7 +1,8 @@
 package com.bangbang93.openbmclapi
 
 import com.bangbang93.openbmclapi.config.ClusterConfig
-import io.ktor.server.application.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
 import org.koin.ktor.plugin.Koin

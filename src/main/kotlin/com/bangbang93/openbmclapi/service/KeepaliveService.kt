@@ -49,7 +49,6 @@ class KeepaliveService(
                 }
             }
     }
-    }
 
     private suspend fun emitKeepAlive() {
         try {

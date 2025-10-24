@@ -2,15 +2,16 @@ package com.bangbang93.openbmclapi
 
 import com.bangbang93.openbmclapi.config.loadConfig
 import com.bangbang93.openbmclapi.service.BootstrapService
-import io.ktor.server.application.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStopping
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.context.GlobalContext
-import org.slf4j.LoggerFactory
 
-private val logger = LoggerFactory.getLogger("Application")
+private val logger = KotlinLogging.logger {}
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -23,8 +24,8 @@ fun Application.module() {
     // Set version for later use
     System.setProperty("app.version", version)
 
-    logger.info("Starting OpenBMCLAPI Kotlin version $version")
-    logger.info("Cluster ID: ${config.clusterId}")
+    logger.info { "Starting OpenBMCLAPI Kotlin version $version" }
+    logger.info { "Cluster ID: ${config.clusterId}" }
 
     configureFrameworks(config)
     configureSerialization()
@@ -41,7 +42,7 @@ fun Application.module() {
                 val bootstrapService = koin.get<BootstrapService>()
                 bootstrapService.bootstrap()
             } catch (e: Exception) {
-                logger.error("Bootstrap failed", e)
+                logger.error(e) { "Bootstrap failed" }
             }
         }
 
@@ -53,7 +54,7 @@ fun Application.module() {
                     val bootstrapService = koin.get<BootstrapService>()
                     bootstrapService.shutdown()
                 } catch (e: Exception) {
-                    logger.error("Shutdown failed", e)
+                    logger.error(e) { "Shutdown failed" }
                 }
             }
         }
