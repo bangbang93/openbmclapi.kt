@@ -82,15 +82,6 @@ class MinioStorage(configMap: Map<String, String>) : IStorage {
                         .stream(ByteArrayInputStream(content), content.size.toLong(), -1)
                         .build(),
                 )
-
-                client.putObject(
-                    PutObjectArgs
-                        .builder()
-                        .bucket(bucket)
-                        .`object`(checkPath)
-                        .stream(ByteArrayInputStream(content), content.size.toLong(), -1)
-                        .build(),
-                )
                 true
             } catch (e: Exception) {
                 logger.error(e) { "Storage check failed" }
@@ -99,9 +90,6 @@ class MinioStorage(configMap: Map<String, String>) : IStorage {
                 try {
                     val checkPath = if (prefix.isEmpty()) ".check" else "$prefix/.check"
                     internalClient.removeObject(
-                        RemoveObjectArgs.builder().bucket(bucket).`object`(checkPath).build(),
-                    )
-                    client.removeObject(
                         RemoveObjectArgs.builder().bucket(bucket).`object`(checkPath).build(),
                     )
                 } catch (e: Exception) {

@@ -71,7 +71,16 @@ data class MinioStorageConfig(
 ) {
     init {
         require(url.isNotBlank()) { "MinIO url 不能为空" }
-        require(url.contains("/")) { "MinIO url 必须包含 bucket 路径，格式: scheme://key:secret@host:port/bucket[/prefix]" }
+        // 验证 URL 格式并确保包含 bucket
+        try {
+            val uri = java.net.URI.create(url)
+            val pathParts = uri.path.split("/").filter { it.isNotEmpty() }
+            require(pathParts.isNotEmpty()) {
+                "MinIO url 必须包含 bucket 路径，格式: scheme://key:secret@host:port/bucket[/prefix]"
+            }
+        } catch (e: Exception) {
+            throw IllegalArgumentException("MinIO url 格式无效: ${e.message}")
+        }
     }
 
     companion object {
