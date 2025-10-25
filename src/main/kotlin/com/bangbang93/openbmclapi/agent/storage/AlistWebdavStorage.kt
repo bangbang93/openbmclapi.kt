@@ -23,9 +23,14 @@ private val logger = KotlinLogging.logger {}
  * Alist WebDAV 存储驱动
  * 支持从 Alist 的 WebDAV 获取 302 重定向地址并缓存
  */
-class AlistWebdavStorage(configMap: Map<String, String>) : WebdavStorage(configMap) {
+class AlistWebdavStorage(
+    configMap: Map<String, String>,
+) : WebdavStorage(configMap) {
     private val alistConfig: AlistWebdavStorageConfig = AlistWebdavStorageConfig.fromMap(configMap)
-    private val httpClient = HttpClient(CIO)
+    private val httpClient =
+        HttpClient(CIO) {
+            followRedirects = false
+        }
     private val redirectUrlCache = ConcurrentHashMap<String, CachedRedirectUrl>()
     private val cacheMutex = Mutex()
 
@@ -61,16 +66,17 @@ class AlistWebdavStorage(configMap: Map<String, String>) : WebdavStorage(configM
         // 发起 HTTP 请求获取实际的文件或重定向
         val response: HttpResponse = httpClient.get(downloadUrl)
 
-        when {
-            // 2xx 成功响应 - 直接返回内容
-            response.status.value in 200..299 -> {
+        when ( // 2xx 成功响应 - 直接返回内容
+            response.status.value
+        ) {
+            in 200..299 -> {
                 val channel = response.bodyAsChannel()
                 val content = channel.readRemaining().readBytes()
                 call.respond(HttpStatusCode.OK, content)
                 return ServeResult(content.size.toLong(), 1)
             }
             // 3xx 重定向 - 缓存重定向URL并返回给客户端
-            response.status.value in 300..399 -> {
+            in 300..399 -> {
                 val location = response.headers["Location"]
                 if (location != null) {
                     // 缓存重定向 URL
