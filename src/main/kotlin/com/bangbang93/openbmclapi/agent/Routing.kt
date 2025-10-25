@@ -6,7 +6,6 @@ import com.bangbang93.openbmclapi.agent.routes.clusterRoutes
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import io.ktor.server.http.content.staticResources
 import io.ktor.server.plugins.autohead.AutoHeadResponse
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
@@ -25,8 +24,5 @@ fun Application.configureRouting() {
         }
 
         clusterRoutes(config, storage, counters)
-
-        // Static plugin. Try to access `/static/index.html`
-        staticResources("/static", "static")
     }
 }
