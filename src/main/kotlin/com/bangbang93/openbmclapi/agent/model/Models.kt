@@ -65,6 +65,12 @@ data class EnableRequest(
     val flavor: Map<String, String>,
 )
 
+@Serializable
+data class CertificateResponse(
+    val cert: String,
+    val key: String,
+)
+
 @OptIn(ExperimentalAtomicApi::class)
 @Single
 class Counters {
