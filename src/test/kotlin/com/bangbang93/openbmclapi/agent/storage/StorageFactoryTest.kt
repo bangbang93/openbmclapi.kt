@@ -51,7 +51,7 @@ class StorageFactoryTest {
                 storage = "minio",
                 storageOpts =
                     mapOf(
-                        "url" to "http://key:secret@minio.example.com:9000/bucket",
+                        "url" to "http://test-access-key:test-secret-key@minio.example.com:9000/bucket",
                     ),
             )
         val factory = StorageFactory(config)
