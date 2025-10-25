@@ -131,7 +131,7 @@ CLUSTER_STORAGE=file
 
 ### WebDAV 存储
 
-支持任何兼容 WebDAV 的存储服务（包括 Alist）:
+支持任何兼容 WebDAV 的存储服务:
 
 ```bash
 CLUSTER_STORAGE=webdav
@@ -143,6 +143,22 @@ CLUSTER_STORAGE_OPTIONS={"url":"https://webdav.example.com","username":"user","p
 - `username`: 认证用户名 (可选)
 - `password`: 认证密码 (可选)
 - `basePath`: 存储基础路径 (必需)
+
+### Alist WebDAV 存储
+
+专为 Alist 优化的 WebDAV 存储，支持 302 重定向 URL 缓存以提高性能:
+
+```bash
+CLUSTER_STORAGE=alist
+CLUSTER_STORAGE_OPTIONS={"url":"https://alist.example.com","username":"user","password":"pass","basePath":"/openbmclapi","cacheTtl":"3600000"}
+```
+
+配置选项:
+- `url`: Alist WebDAV 服务器地址 (必需)
+- `username`: 认证用户名 (可选)
+- `password`: 认证密码 (可选)
+- `basePath`: 存储基础路径 (必需)
+- `cacheTtl`: 重定向 URL 缓存时间，单位毫秒 (可选，默认 3600000 即 1 小时)
 
 ### MinIO 存储
 

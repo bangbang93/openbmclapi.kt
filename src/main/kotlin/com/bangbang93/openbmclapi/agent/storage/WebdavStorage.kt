@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.storage
 
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
+import com.bangbang93.openbmclapi.agent.storage.config.WebdavStorageConfig
 import com.github.sardine.Sardine
 import com.github.sardine.SardineFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -15,12 +16,13 @@ import java.io.ByteArrayInputStream
 
 private val logger = KotlinLogging.logger {}
 
-class WebdavStorage(private val config: Map<String, String>) : IStorage {
-    private val client: Sardine
-    private val baseUrl: String
-    private val basePath: String
-    private val files = mutableMapOf<String, FileMetadata>()
-    private val emptyFiles = mutableSetOf<String>()
+open class WebdavStorage(configMap: Map<String, String>) : IStorage {
+    protected val config: WebdavStorageConfig = WebdavStorageConfig.fromMap(configMap)
+    protected val client: Sardine
+    protected val baseUrl: String
+    protected val basePath: String
+    protected val files = mutableMapOf<String, FileMetadata>()
+    protected val emptyFiles = mutableSetOf<String>()
 
     data class FileMetadata(
         val size: Long,
@@ -28,19 +30,15 @@ class WebdavStorage(private val config: Map<String, String>) : IStorage {
     )
 
     init {
-        val url = config["url"] ?: throw IllegalArgumentException("WebDAV url is required")
-        val username = config["username"]
-        val password = config["password"]
-
         client =
-            if (username != null && password != null) {
-                SardineFactory.begin(username, password)
+            if (config.username != null && config.password != null) {
+                SardineFactory.begin(config.username, config.password)
             } else {
                 SardineFactory.begin()
             }
 
-        baseUrl = url.trimEnd('/')
-        basePath = (config["basePath"] ?: "/").trim('/')
+        baseUrl = config.url.trimEnd('/')
+        basePath = config.basePath.trim('/')
     }
 
     override suspend fun init() {
@@ -195,7 +193,7 @@ class WebdavStorage(private val config: Map<String, String>) : IStorage {
         return ServeResult(size, 1)
     }
 
-    private fun Sardine.getFileDownloadLink(path: String): String {
+    protected fun Sardine.getFileDownloadLink(path: String): String {
         return path
     }
 }

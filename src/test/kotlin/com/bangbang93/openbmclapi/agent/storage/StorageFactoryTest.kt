@@ -43,6 +43,28 @@ class StorageFactoryTest {
     }
 
     @Test
+    fun `创建Alist WebDAV存储成功`() {
+        val config =
+            ClusterConfig(
+                clusterId = "test",
+                clusterSecret = "test",
+                storage = "alist",
+                storageOpts =
+                    mapOf(
+                        "url" to "https://alist.example.com",
+                        "username" to "user",
+                        "password" to "pass",
+                        "basePath" to "/test",
+                        "cacheTtl" to "3600000",
+                    ),
+            )
+        val factory = StorageFactory(config)
+        val storage = factory.createStorage()
+
+        assertTrue(storage is AlistWebdavStorage, "应该创建 AlistWebdavStorage 实例")
+    }
+
+    @Test
     fun `创建MinIO存储成功`() {
         val config =
             ClusterConfig(
@@ -78,6 +100,26 @@ class StorageFactoryTest {
         val storage = factory.createStorage()
 
         assertTrue(storage is OssStorage, "应该创建 OssStorage 实例")
+    }
+
+    @Test
+    fun `缺少必需参数应该抛出异常`() {
+        val config =
+            ClusterConfig(
+                clusterId = "test",
+                clusterSecret = "test",
+                storage = "webdav",
+                storageOpts =
+                    mapOf(
+                        "url" to "https://webdav.example.com",
+                        // 缺少 basePath
+                    ),
+            )
+        val factory = StorageFactory(config)
+
+        assertFailsWith<IllegalArgumentException> {
+            factory.createStorage()
+        }
     }
 
     @Test

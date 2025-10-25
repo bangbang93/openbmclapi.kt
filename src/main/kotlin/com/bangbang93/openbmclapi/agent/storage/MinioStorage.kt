@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.storage
 
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
+import com.bangbang93.openbmclapi.agent.storage.config.MinioStorageConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respondRedirect
@@ -19,7 +20,8 @@ import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
-class MinioStorage(private val config: Map<String, String>) : IStorage {
+class MinioStorage(configMap: Map<String, String>) : IStorage {
+    private val config: MinioStorageConfig = MinioStorageConfig.fromMap(configMap)
     private val client: MinioClient
     private val internalClient: MinioClient
     private val bucket: String
@@ -32,18 +34,15 @@ class MinioStorage(private val config: Map<String, String>) : IStorage {
     )
 
     init {
-        val url = config["url"] ?: throw IllegalArgumentException("MinIO url is required")
-        val internalUrl = config["internalUrl"]
-
-        client = createMinioClient(url)
+        client = createMinioClient(config.url)
         internalClient =
-            if (internalUrl != null) {
-                createMinioClient(internalUrl)
+            if (config.internalUrl != null) {
+                createMinioClient(config.internalUrl)
             } else {
                 client
             }
 
-        val uri = URI.create(url)
+        val uri = URI.create(config.url)
         val pathParts = uri.path.split("/").filter { it.isNotEmpty() }
         bucket = pathParts.firstOrNull() ?: throw IllegalArgumentException("MinIO bucket not specified in url path")
         prefix = pathParts.drop(1).joinToString("/")

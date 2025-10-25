@@ -14,6 +14,7 @@ class StorageFactory(private val config: ClusterConfig) {
             when (config.storage) {
                 "file" -> FileStorage(File(System.getProperty("user.dir"), "cache").absolutePath)
                 "webdav" -> WebdavStorage(config.storageOpts)
+                "alist" -> AlistWebdavStorage(config.storageOpts)
                 "minio" -> MinioStorage(config.storageOpts)
                 "oss" -> OssStorage(config.storageOpts)
                 else -> throw IllegalStateException("Unsupported storage type: ${config.storage}")

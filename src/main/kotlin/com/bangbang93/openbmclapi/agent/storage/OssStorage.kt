@@ -9,6 +9,7 @@ import com.aliyun.oss.model.ObjectMetadata
 import com.aliyun.oss.model.ResponseHeaderOverrides
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.GCCounter
+import com.bangbang93.openbmclapi.agent.storage.config.OssStorageConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -21,7 +22,8 @@ import java.util.Date
 
 private val logger = KotlinLogging.logger {}
 
-class OssStorage(private val config: Map<String, String>) : IStorage {
+class OssStorage(configMap: Map<String, String>) : IStorage {
+    private val config: OssStorageConfig = OssStorageConfig.fromMap(configMap)
     private val client: OSS
     private val bucket: String
     private val prefix: String
@@ -34,15 +36,11 @@ class OssStorage(private val config: Map<String, String>) : IStorage {
     )
 
     init {
-        val accessKeyId = config["accessKeyId"] ?: throw IllegalArgumentException("OSS accessKeyId is required")
-        val accessKeySecret =
-            config["accessKeySecret"] ?: throw IllegalArgumentException("OSS accessKeySecret is required")
-        bucket = config["bucket"] ?: throw IllegalArgumentException("OSS bucket is required")
-        val endpoint = config["endpoint"] ?: "oss-cn-hangzhou.aliyuncs.com"
-        prefix = config["prefix"] ?: ""
-        proxy = config["proxy"]?.toBoolean() ?: true
+        bucket = config.bucket
+        prefix = config.prefix
+        proxy = config.proxy
 
-        client = OSSClientBuilder().build(endpoint, accessKeyId, accessKeySecret)
+        client = OSSClientBuilder().build(config.endpoint, config.accessKeyId, config.accessKeySecret)
     }
 
     override suspend fun check(): Boolean =
