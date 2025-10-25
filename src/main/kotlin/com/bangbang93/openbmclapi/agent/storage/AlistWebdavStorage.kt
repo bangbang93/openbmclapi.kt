@@ -11,10 +11,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondRedirect
-import io.ktor.utils.io.core.readBytes
 import io.ktor.utils.io.readRemaining
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.io.readByteArray
 import java.util.concurrent.ConcurrentHashMap
 
 private val logger = KotlinLogging.logger {}
@@ -71,7 +71,7 @@ class AlistWebdavStorage(
         ) {
             in 200..299 -> {
                 val channel = response.bodyAsChannel()
-                val content = channel.readRemaining().readBytes()
+                val content = channel.readRemaining().readByteArray()
                 call.respond(HttpStatusCode.OK, content)
                 return ServeResult(content.size.toLong(), 1)
             }
