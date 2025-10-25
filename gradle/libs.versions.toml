@@ -15,6 +15,7 @@ zstd-jni = "1.5.7-6"
 sardine = "5.10"
 minio = "8.5.14"
 aliyun-oss = "3.18.1"
+kotlin-retry = "2.0.2"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -50,6 +51,7 @@ zstd-jni = { module = "com.github.luben:zstd-jni", version.ref = "zstd-jni" }
 sardine = { module = "com.github.lookfirst:sardine", version.ref = "sardine" }
 minio = { module = "io.minio:minio", version.ref = "minio" }
 aliyun-oss = { module = "com.aliyun.oss:aliyun-sdk-oss", version.ref = "aliyun-oss" }
+kotlin-retry = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.ref = "kotlin-retry" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

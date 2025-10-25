@@ -35,7 +35,6 @@ dependencies {
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
     implementation(libs.koin.annotations)
-    ksp(libs.koin.ksp.compiler)
     implementation(libs.kotlin.logging)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.core)
@@ -62,6 +61,8 @@ dependencies {
     implementation(libs.sardine)
     implementation(libs.minio)
     implementation(libs.aliyun.oss)
+    implementation(libs.kotlin.retry)
+    ksp(libs.koin.ksp.compiler)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 }

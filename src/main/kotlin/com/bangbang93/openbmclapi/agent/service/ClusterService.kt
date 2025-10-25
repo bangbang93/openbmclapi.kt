@@ -12,6 +12,8 @@ import com.bangbang93.openbmclapi.agent.util.HashUtil
 import com.bangbang93.openbmclapi.agent.util.emitAck
 import com.github.avrokotlin.avro4k.Avro
 import com.github.luben.zstd.Zstd.decompress
+import com.github.michaelbull.retry.policy.stopAtAttempts
+import com.github.michaelbull.retry.retry
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -110,8 +112,10 @@ class ClusterService(
 
     private suspend fun downloadFile(file: FileInfo) {
         val response =
-            httpClient.get("${config.clusterBmclapi}${file.path}") {
-                header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+            retry(stopAtAttempts(5)) {
+                httpClient.get("${config.clusterBmclapi}${file.path}") {
+                    header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+                }
             }
 
         val content = response.body<ByteArray>()
