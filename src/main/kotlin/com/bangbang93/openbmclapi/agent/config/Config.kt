@@ -1,8 +1,10 @@
 package com.bangbang93.openbmclapi.agent.config
 
 import io.github.cdimascio.dotenv.Dotenv
-import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationEnvironment
+import io.ktor.server.engine.applicationEnvironment
 import kotlinx.serialization.json.Json
+import org.koin.core.annotation.Single
 
 data class ClusterConfig(
     val clusterId: String,
@@ -31,8 +33,12 @@ data class ConfigFlavor(
     val storage: String,
 )
 
-fun Application.loadConfig(): ClusterConfig {
-    val env = environment.config
+@Single
+fun getEnv() = applicationEnvironment()
+
+@Single
+fun getConfig(env: ApplicationEnvironment): ClusterConfig {
+    val envConfig = env.config
     // 使用 dotenv-kotlin 加载 .env（若不存在则忽略），优先级低于 Ktor config，但高于系统默认值
     val dotenv: Dotenv = Dotenv.configure().ignoreIfMissing().load()
 
@@ -51,7 +57,7 @@ fun Application.loadConfig(): ClusterConfig {
         dotenvKey: String?,
     ): String? =
         firstNonBlank(
-            { ktorKey?.let { env.propertyOrNull(it)?.getString() } },
+            { ktorKey?.let { envConfig.propertyOrNull(it)?.getString() } },
             { dotenvKey?.let { dotenv[it] } },
             { System.getenv(dotenvKey ?: "")?.takeIf { it.isNotBlank() } },
             { System.getProperty(dotenvKey ?: "")?.takeIf { it.isNotBlank() } },

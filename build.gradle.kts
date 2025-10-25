@@ -10,7 +10,7 @@ group = "com.bangbang93.openbmclapi.agent"
 version = "0.0.1"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass = "com.bangbang93.openbmclapi.agent.ApplicationKt"
 }
 
 // 在打包时把项目 version 写入 JAR 的 manifest，方便运行时通过 Package.getImplementationVersion() 读取

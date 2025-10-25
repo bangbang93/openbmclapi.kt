@@ -1,20 +1,15 @@
 package com.bangbang93.openbmclapi.agent
 
-import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
-import org.koin.dsl.module
 import org.koin.ksp.generated.module
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
-fun Application.configureFrameworks(config: ClusterConfig) {
+fun Application.configureFrameworks() {
     install(Koin) {
         slf4jLogger()
         modules(
-            module {
-                single { config }
-            },
             AppModule().module,
         )
     }

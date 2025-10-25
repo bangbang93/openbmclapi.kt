@@ -201,16 +201,7 @@ class ClusterService(
 
     suspend fun requestCert(): CertificateResponse {
         logger.debug { "Requesting certificate from server" }
-        val response = socket.emitAck("request-cert", null)
-
-        // Parse the response - it comes as a JSON object
-        @Suppress("UNCHECKED_CAST")
-        val responseMap = response as? Map<String, Any> ?: throw Exception("Invalid certificate response")
-
-        val cert = responseMap["cert"] as? String ?: throw Exception("Missing certificate in response")
-        val key = responseMap["key"] as? String ?: throw Exception("Missing key in response")
-
-        return CertificateResponse(cert = cert, key = key)
+        return socket.emitAck<CertificateResponse>("request-cert")
     }
 
     fun close() {
