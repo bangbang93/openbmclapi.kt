@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.model.CertificateResponse
 import com.bangbang93.openbmclapi.agent.model.EnableRequest
 import com.bangbang93.openbmclapi.agent.model.FileInfo
 import com.bangbang93.openbmclapi.agent.model.FileList
@@ -126,6 +127,12 @@ class ClusterService(
     }
 
     suspend fun connect() {
+        // Don't reconnect if already connected
+        if (::socket.isInitialized && socket.connected()) {
+            logger.debug { "Already connected to server" }
+            return
+        }
+
         val opts =
             IO.Options().apply {
                 transports = arrayOf("websocket")
@@ -190,6 +197,20 @@ class ClusterService(
         isEnabled = false
         socket.disconnect()
         logger.info { "Cluster disabled" }
+    }
+
+    suspend fun requestCert(): CertificateResponse {
+        logger.debug { "Requesting certificate from server" }
+        val response = socket.emitAck("request-cert", null)
+
+        // Parse the response - it comes as a JSON object
+        @Suppress("UNCHECKED_CAST")
+        val responseMap = response as? Map<String, Any> ?: throw Exception("Invalid certificate response")
+
+        val cert = responseMap["cert"] as? String ?: throw Exception("Missing certificate in response")
+        val key = responseMap["key"] as? String ?: throw Exception("Missing key in response")
+
+        return CertificateResponse(cert = cert, key = key)
     }
 
     fun close() {

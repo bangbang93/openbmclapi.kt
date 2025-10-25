@@ -62,9 +62,12 @@ dependencies {
     implementation(libs.minio)
     implementation(libs.aliyun.oss)
     implementation(libs.kotlin.retry)
+    implementation(libs.bouncycastle.prov)
+    implementation(libs.bouncycastle.pkix)
     ksp(libs.koin.ksp.compiler)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.mockk)
 }
 
 // Configure KSP to generate code in the correct source set
