@@ -22,10 +22,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.socket.client.IO
 import io.socket.client.Socket
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromByteArray
 import org.koin.core.annotation.Single
 import java.net.URI
@@ -86,21 +87,25 @@ class ClusterService(
         logger.info { "Missing ${missingFiles.size} files, starting sync" }
         logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
 
-        val downloadJobs =
-            missingFiles.map { file ->
-                CoroutineScope(Dispatchers.IO).async {
-                    try {
-                        downloadFile(file)
-                        logger.debug { "Downloaded: ${file.path}" }
-                    } catch (e: Exception) {
-                        logger.error(e) { "Failed to download ${file.path}" }
-                        throw e
+        val sema = Semaphore(syncConfig.concurrency)
+
+        withContext(Dispatchers.IO) {
+            missingFiles.forEach { file ->
+                sema.withPermit {
+                    async {
+                        try {
+                            downloadFile(file)
+                            logger.debug { "Downloaded: ${file.path}" }
+                        } catch (e: Exception) {
+                            logger.error(e) { "Failed to download ${file.path}" }
+                            throw e
+                        }
                     }
                 }
             }
+        }
 
-        val results = downloadJobs.awaitAll()
-        logger.info { "Sync completed: ${results.size} files" }
+        logger.info { "Sync completed: ${missingFiles.size} files" }
     }
 
     private suspend fun downloadFile(file: FileInfo) {
