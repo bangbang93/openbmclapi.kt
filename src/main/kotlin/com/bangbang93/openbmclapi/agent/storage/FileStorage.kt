@@ -33,7 +33,7 @@ class FileStorage(private val cacheDir: String) : IStorage {
                 checkFile.delete()
                 true
             } catch (e: Exception) {
-                logger.error("Storage check failed", e)
+                logger.error(e) { "Storage check failed" }
                 false
             }
         }

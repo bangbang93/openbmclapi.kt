@@ -111,6 +111,8 @@ java -jar build/libs/openbmclapi-agent-0.0.1-all.jar
 
 ## 存储后端
 
+支持多种存储后端以适应不同的部署需求:
+
 ### 文件存储 (默认)
 
 在本地 `cache/` 目录中存储文件，使用基于哈希的目录结构:
@@ -122,11 +124,60 @@ cache/
     cd34ef56ab12...
 ```
 
-### 未来的存储后端
+配置示例:
+```bash
+CLUSTER_STORAGE=file
+```
 
-- **MinIO**: S3 兼容的对象存储
-- **阿里云 OSS**: 阿里云对象存储服务
-- **WebDAV**: 基于 WebDAV 的存储 (支持 Alist)
+### WebDAV 存储
+
+支持任何兼容 WebDAV 的存储服务（包括 Alist）:
+
+```bash
+CLUSTER_STORAGE=webdav
+CLUSTER_STORAGE_OPTIONS={"url":"https://webdav.example.com","username":"user","password":"pass","basePath":"/openbmclapi"}
+```
+
+配置选项:
+- `url`: WebDAV 服务器地址 (必需)
+- `username`: 认证用户名 (可选)
+- `password`: 认证密码 (可选)
+- `basePath`: 存储基础路径 (必需)
+
+### MinIO 存储
+
+支持 MinIO 和其他 S3 兼容的对象存储:
+
+```bash
+CLUSTER_STORAGE=minio
+CLUSTER_STORAGE_OPTIONS={"url":"http://accesskey:secretkey@minio.example.com:9000/bucket/prefix"}
+```
+
+高级配置（使用内网地址）:
+```bash
+CLUSTER_STORAGE_OPTIONS={"url":"http://accesskey:secretkey@minio.example.com:9000/bucket","internalUrl":"http://accesskey:secretkey@minio-internal:9000/bucket"}
+```
+
+配置选项:
+- `url`: MinIO 服务器地址，格式为 `scheme://accessKey:secretKey@host:port/bucket/prefix` (必需)
+- `internalUrl`: 内网访问地址，用于文件上传下载（可选，提高性能）
+
+### 阿里云 OSS 存储
+
+使用阿里云对象存储服务:
+
+```bash
+CLUSTER_STORAGE=oss
+CLUSTER_STORAGE_OPTIONS={"accessKeyId":"your-key","accessKeySecret":"your-secret","bucket":"your-bucket","endpoint":"oss-cn-hangzhou.aliyuncs.com","prefix":"openbmclapi","proxy":"false"}
+```
+
+配置选项:
+- `accessKeyId`: 阿里云访问密钥 ID (必需)
+- `accessKeySecret`: 阿里云访问密钥 (必需)
+- `bucket`: OSS 存储桶名称 (必需)
+- `endpoint`: OSS 地区节点，如 `oss-cn-hangzhou.aliyuncs.com` (可选，默认杭州)
+- `prefix`: 文件存储前缀 (可选，默认为空)
+- `proxy`: 是否通过服务器代理文件，`true` 表示流式传输，`false` 表示生成签名 URL (可选，默认 `true`)
 
 ## 从 TypeScript 版本迁移的说明
 
@@ -140,8 +191,7 @@ cache/
 ### 主要区别
 
 1. **无集群/守护进程模式**: 简化为单进程模型
-2. **仅文件存储**: 其他存储后端待实现
-3**无 nginx 集成**: 通过 Ktor 直接提供文件服务
+2. **无 nginx 集成**: 通过 Ktor 直接提供文件服务
 
 ## 代码规范
 
@@ -188,6 +238,5 @@ MIT License - 参见 LICENSE 文件
 
 本项目正在积极开发中。以下特性待实现:
 
-- 其他存储后端
 - UPNP 支持
 
