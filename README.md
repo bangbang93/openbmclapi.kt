@@ -52,13 +52,6 @@ export CLUSTER_STORAGE=file
 或使用 `application.yaml`:
 
 ```yaml
-ktor:
-    application:
-        modules:
-            - com.bangbang93.openbmclapi.ApplicationKt.module
-    deployment:
-        port: 8080
-
 openbmclapi:
     cluster:
         id: 你的集群ID
@@ -212,51 +205,6 @@ export SSL_KEY=/path/to/key.pem
 证书可以是:
 - 文件路径: 系统将读取指定文件
 - 证书内容: 直接在环境变量中提供 PEM 格式的证书内容
-
-### 非 BYOC 模式 (自动获取证书)
-
-当 `CLUSTER_BYOC=false` (默认) 时，系统会自动从主控服务器请求证书:
-
-1. 启动时连接到主控服务器
-2. 通过 Socket.IO 请求 SSL 证书
-3. 证书保存到 `/tmp/openbmclapi/cert.pem` 和 `/tmp/openbmclapi/key.pem`
-
-### 启用 HTTPS
-
-获取证书后，需要配置 Ktor 使用 HTTPS。编辑 `application.yaml`:
-
-```yaml
-ktor:
-    deployment:
-        sslPort: 443
-        security:
-            ssl:
-                keyStore: /path/to/keystore.jks
-                keyAlias: openbmclapi
-                keyStorePassword: changeit
-                privateKeyPassword: changeit
-```
-
-**注意**: Ktor 需要 JKS 格式的 keystore，而不是 PEM 文件。使用以下命令转换:
-
-```bash
-# 将 PEM 转换为 PKCS12
-openssl pkcs12 -export \
-    -in /tmp/openbmclapi/cert.pem \
-    -inkey /tmp/openbmclapi/key.pem \
-    -out /tmp/openbmclapi/keystore.p12 \
-    -name openbmclapi \
-    -passout pass:changeit
-
-# 将 PKCS12 转换为 JKS
-keytool -importkeystore \
-    -srckeystore /tmp/openbmclapi/keystore.p12 \
-    -srcstoretype PKCS12 \
-    -srcstorepass changeit \
-    -destkeystore /tmp/openbmclapi/keystore.jks \
-    -deststoretype JKS \
-    -deststorepass changeit
-```
 
 ## 从 TypeScript 版本迁移的说明
 

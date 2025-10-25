@@ -2,27 +2,6 @@ ktor:
     application:
         modules:
             - com.bangbang93.openbmclapi.agent.ApplicationKt.module
-    deployment:
-        port: 4000
-        # Optional: HTTPS SSL configuration
-        # This can be configured to use certificates from /tmp/openbmclapi/*.pem
-        # which are automatically fetched/loaded during bootstrap
-        # 
-        # For BYOC mode with local certificates, configure SSL before starting:
-        # sslPort: 443
-        # 
-        # For non-BYOC mode, certificates will be fetched and saved to /tmp/openbmclapi/
-        # You can then configure SSL to use those certificates:
-        #
-        # security:
-        #     ssl:
-        #         keyStore: /tmp/openbmclapi/keystore.jks
-        #         keyAlias: openbmclapi
-        #         keyStorePassword: changeit
-        #         privateKeyPassword: changeit
-        #
-        # Note: PEM certificates at /tmp/openbmclapi/cert.pem and /tmp/openbmclapi/key.pem
-        # need to be converted to JKS format for Ktor. Use keytool or similar utilities.
 
 # OpenBMCLAPI Configuration
 # Most settings can be provided via environment variables as well
