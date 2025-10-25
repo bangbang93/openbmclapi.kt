@@ -127,6 +127,12 @@ class ClusterService(
     }
 
     suspend fun connect() {
+        // Don't reconnect if already connected
+        if (::socket.isInitialized && socket.connected()) {
+            logger.debug { "Already connected to server" }
+            return
+        }
+
         val opts =
             IO.Options().apply {
                 transports = arrayOf("websocket")

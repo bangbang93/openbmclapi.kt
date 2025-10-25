@@ -1,6 +1,7 @@
 package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.util.PemToKeyStoreConverter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
 import java.io.File
@@ -21,6 +22,7 @@ class CertificateService(
     private val tmpDir: Path = Paths.get(System.getProperty("java.io.tmpdir"), "openbmclapi")
     private val certPath: Path = tmpDir.resolve("cert.pem")
     private val keyPath: Path = tmpDir.resolve("key.pem")
+    private val keystorePath: Path = tmpDir.resolve("keystore.jks")
 
     init {
         tmpDir.createDirectories()
@@ -39,12 +41,14 @@ class CertificateService(
             } else {
                 logger.info { "BYOC mode: using local certificates" }
                 useSelfCert()
+                convertPemToKeystore()
                 true
             }
         } else {
             // Request certificates from server
             logger.info { "Requesting certificates from server" }
             requestCert()
+            convertPemToKeystore()
             true
         }
     }
@@ -96,6 +100,23 @@ class CertificateService(
     }
 
     /**
+     * Convert PEM certificates to JKS keystore for Ktor
+     */
+    private fun convertPemToKeystore() {
+        try {
+            PemToKeyStoreConverter.convertPemToJks(
+                certPath.toString(),
+                keyPath.toString(),
+                keystorePath.toString(),
+            )
+            logger.info { "Converted PEM certificates to JKS keystore" }
+        } catch (e: Exception) {
+            logger.error(e) { "Failed to convert PEM to JKS keystore" }
+            throw e
+        }
+    }
+
+    /**
      * Get the path to the certificate file
      */
     fun getCertificatePath(): String = certPath.toString()
@@ -106,7 +127,12 @@ class CertificateService(
     fun getKeyPath(): String = keyPath.toString()
 
     /**
+     * Get the path to the keystore file
+     */
+    fun getKeystorePath(): String = keystorePath.toString()
+
+    /**
      * Check if certificates are ready
      */
-    fun areCertificatesReady(): Boolean = certPath.exists() && keyPath.exists()
+    fun areCertificatesReady(): Boolean = certPath.exists() && keyPath.exists() && keystorePath.exists()
 }

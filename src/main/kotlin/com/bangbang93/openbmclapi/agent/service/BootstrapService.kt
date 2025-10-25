@@ -20,7 +20,6 @@ class BootstrapService(
     private val storage: IStorage,
     private val tokenManager: TokenManager,
     private val clusterService: ClusterService,
-    private val certificateService: CertificateService,
     counters: Counters,
 ) {
     private val version = Version.current
@@ -35,10 +34,6 @@ class BootstrapService(
 
         // Connect to cluster
         clusterService.connect()
-
-        // Setup SSL certificates
-        val useHttps = certificateService.setupCertificates()
-        logger.info { "Server will use ${if (useHttps) "HTTPS" else "HTTP"}" }
 
         // Check storage
         val storageReady = storage.check()
