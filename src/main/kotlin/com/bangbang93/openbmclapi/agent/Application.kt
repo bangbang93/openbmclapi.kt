@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.koin.core.context.GlobalContext
 
 private val logger = KotlinLogging.logger {}
@@ -49,7 +50,7 @@ fun Application.module() {
 
         // Register shutdown hook
         monitor.subscribe(ApplicationStopping) {
-            CoroutineScope(Dispatchers.IO).launch {
+            runBlocking {
                 try {
                     val koin = GlobalContext.get()
                     val bootstrapService = koin.get<BootstrapService>()

@@ -3,7 +3,7 @@ package com.bangbang93.openbmclapi.agent.util
 import io.socket.client.Ack
 import io.socket.client.Socket
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
+import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -21,12 +21,12 @@ suspend inline fun <reified T> Socket.emitAck(
             *jsonArgs,
             Ack { ackArgs: Array<Any?> ->
                 try {
-                    val arg = ackArgs.firstOrNull() as? JsonArray ?: return@Ack cont.resume(null)
-                    val err = arg.firstOrNull()
+                    val arg = ackArgs.firstOrNull() as? JSONArray ?: return@Ack cont.resume(null)
+                    val err = arg[0]
                     if (err != null) {
                         cont.resumeWithException(Exception(err.toString()))
                     } else {
-                        cont.resume(arg.getOrNull(1))
+                        cont.resume(arg[1])
                     }
                 } catch (e: Exception) {
                     cont.resumeWithException(e)

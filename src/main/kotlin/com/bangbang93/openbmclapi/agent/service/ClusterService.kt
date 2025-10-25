@@ -178,8 +178,6 @@ class ClusterService(
 
         socket.emitAck("enable", enableRequest)
 
-        // Note: In a real implementation, this would use socket.emit with acknowledgment
-        // For now, we'll mark as enabled
         isEnabled = true
         wantEnable = true
         logger.info { "Cluster enabled" }
