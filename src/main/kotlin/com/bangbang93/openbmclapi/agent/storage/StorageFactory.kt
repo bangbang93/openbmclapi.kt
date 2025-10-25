@@ -1,16 +1,26 @@
 package com.bangbang93.openbmclapi.agent.storage
 
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.koin.core.annotation.Single
 import java.io.File
+
+private val logger = KotlinLogging.logger {}
 
 @Single
 class StorageFactory(private val config: ClusterConfig) {
     fun createStorage(): IStorage {
-        return when (config.storage) {
-            "file" -> FileStorage(File(System.getProperty("user.dir"), "cache").absolutePath)
-            else -> throw IllegalStateException("Unsupported storage type: ${config.storage}")
-        }
+        val storage =
+            when (config.storage) {
+                "file" -> FileStorage(File(System.getProperty("user.dir"), "cache").absolutePath)
+                "webdav" -> WebdavStorage(config.storageOpts)
+                "alist" -> AlistWebdavStorage(config.storageOpts)
+                "minio" -> MinioStorage(config.storageOpts)
+                "oss" -> OssStorage(config.storageOpts)
+                else -> throw IllegalStateException("Unsupported storage type: ${config.storage}")
+            }
+        logger.info { "Using storage type: ${config.storage}" }
+        return storage
     }
 }
 

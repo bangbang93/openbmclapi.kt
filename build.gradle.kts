@@ -59,6 +59,9 @@ dependencies {
     implementation(libs.dotenvKotlin)
     implementation(libs.avro4k.core)
     implementation(libs.zstd.jni)
+    implementation(libs.sardine)
+    implementation(libs.minio)
+    implementation(libs.aliyun.oss)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
 }

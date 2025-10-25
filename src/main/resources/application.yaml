@@ -12,10 +12,57 @@ ktor:
 # Required: CLUSTER_ID, CLUSTER_SECRET
 # Optional: CLUSTER_IP, CLUSTER_PORT, CLUSTER_PUBLIC_PORT, etc.
 #
+# Complete configuration example:
+#
 # openbmclapi:
 #     cluster:
+#         # 必需: 集群 ID 和密钥 (从 bangbang93 处获取)
 #         id: your-cluster-id
 #         secret: your-cluster-secret
-#         port: 4000
-#         publicPort: 4000
-#         storage: file
+#
+#         # 可选: 网络配置
+#         ip: your.public.ip.or.domain  # 用户访问使用的公网 IP 或域名
+#         port: 4000                     # 监听端口
+#         publicPort: 4000               # 对外端口 (如果与监听端口不同)
+#
+#         # 可选: 高级设置
+#         byoc: false                    # 自带证书模式
+#         disableAccessLog: false        # 禁用访问日志
+#         enableUpnp: false              # 启用 UPNP
+#
+#         # 可选: 主控服务器 URL
+#         bmclapi: https://openbmclapi.bangbang93.com
+#
+#     # 可选: SSL 配置 (BYOC 模式)
+#     ssl:
+#         key: /path/to/key.pem
+#         cert: /path/to/cert.pem
+#
+#     # 可选: 存储配置
+#     storage:
+#         type: file  # 存储类型: file, webdav, alist, minio, oss
+#
+#         # 不同存储类型的配置选项 (使用 opts 字段传递 JSON 字符串)
+#         # opts: "{\"key\":\"value\"}"
+#
+#         # 文件存储 (默认) - 无需额外配置
+#         # type: file
+#
+#         # WebDAV 存储示例
+#         # type: webdav
+#         # opts: "{\"url\":\"https://webdav.example.com\",\"username\":\"user\",\"password\":\"pass\",\"basePath\":\"/openbmclapi\"}"
+#
+#         # Alist WebDAV 存储示例 (支持 302 重定向缓存)
+#         # type: alist
+#         # opts: "{\"url\":\"https://alist.example.com\",\"username\":\"user\",\"password\":\"pass\",\"basePath\":\"/openbmclapi\",\"cacheTtl\":\"3600000\"}"
+#
+#         # MinIO 存储示例
+#         # type: minio
+#         # opts: "{\"url\":\"http://key:secret@minio.example.com:9000/bucket/prefix\"}"
+#         # 或使用内网地址提高性能:
+#         # opts: "{\"url\":\"http://key:secret@minio.example.com:9000/bucket\",\"internalUrl\":\"http://key:secret@minio-internal:9000/bucket\"}"
+#
+#         # 阿里云 OSS 存储示例
+#         # type: oss
+#         # opts: "{\"accessKeyId\":\"your-key\",\"accessKeySecret\":\"your-secret\",\"bucket\":\"your-bucket\",\"endpoint\":\"oss-cn-hangzhou.aliyuncs.com\",\"prefix\":\"openbmclapi\",\"proxy\":\"false\"}"
+

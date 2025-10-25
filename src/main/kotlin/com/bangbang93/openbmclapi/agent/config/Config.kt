@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.config
 
 import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.Application
+import kotlinx.serialization.json.Json
 
 data class ClusterConfig(
     val clusterId: String,
@@ -56,6 +57,16 @@ fun Application.loadConfig(): ClusterConfig {
             { System.getProperty(dotenvKey ?: "")?.takeIf { it.isNotBlank() } },
         )
 
+    // Helper: 解析 JSON 配置为 Map
+    fun parseStorageOpts(jsonStr: String?): Map<String, String> {
+        if (jsonStr.isNullOrBlank()) return emptyMap()
+        return try {
+            Json.decodeFromString<Map<String, String>>(jsonStr)
+        } catch (e: Exception) {
+            emptyMap()
+        }
+    }
+
     return ClusterConfig(
         clusterId =
             lookupString("openbmclapi.cluster.id", "CLUSTER_ID") ?: "test-cluster",
@@ -79,6 +90,8 @@ fun Application.loadConfig(): ClusterConfig {
             lookupString("openbmclapi.cluster.enableUpnp", "ENABLE_UPNP")?.toBoolean() ?: false,
         storage =
             lookupString("openbmclapi.storage.type", "CLUSTER_STORAGE") ?: "file",
+        storageOpts =
+            parseStorageOpts(lookupString("openbmclapi.storage.opts", "CLUSTER_STORAGE_OPTIONS")),
         sslKey =
             lookupString("openbmclapi.ssl.key", "SSL_KEY"),
         sslCert =
