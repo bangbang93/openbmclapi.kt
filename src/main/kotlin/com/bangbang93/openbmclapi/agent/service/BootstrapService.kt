@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.config.Version
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,7 +24,7 @@ class BootstrapService(
     private val clusterService: ClusterService,
     private val counters: Counters,
 ) {
-    private val version = System.getProperty("app.version") ?: "0.0.1"
+    private val version = Version.current
     private val keepaliveService = KeepaliveService(1.minutes, clusterService, counters)
     private var checkFileJob: Job? = null
 

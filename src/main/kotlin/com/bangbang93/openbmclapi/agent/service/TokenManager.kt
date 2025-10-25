@@ -2,6 +2,7 @@ package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
 import com.bangbang93.openbmclapi.agent.config.ClusterConfig
+import com.bangbang93.openbmclapi.agent.config.Version
 import com.bangbang93.openbmclapi.agent.model.ChallengeResponse
 import com.bangbang93.openbmclapi.agent.model.TokenRequest
 import com.bangbang93.openbmclapi.agent.model.TokenResponse
@@ -33,7 +34,7 @@ class TokenManager(
 ) {
     private val clusterId = config.clusterId
     private val clusterSecret = config.clusterSecret
-    private val version = System.getProperty("app.version") ?: "0.0.1"
+    private val version = Version.current
     private val userAgent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/$version"
     private val prefixUrl = config.clusterBmclapi
 
