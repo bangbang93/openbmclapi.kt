@@ -195,6 +195,69 @@ CLUSTER_STORAGE_OPTIONS={"accessKeyId":"your-key","accessKeySecret":"your-secret
 - `prefix`: 文件存储前缀 (可选，默认为空)
 - `proxy`: 是否通过服务器代理文件，`true` 表示流式传输，`false` 表示生成签名 URL (可选，默认 `true`)
 
+## HTTPS/SSL 配置
+
+OpenBMCLAPI 支持两种 HTTPS 证书配置模式:
+
+### BYOC 模式 (自带证书)
+
+当 `CLUSTER_BYOC=true` 且提供了证书时，系统将使用本地证书:
+
+```bash
+export CLUSTER_BYOC=true
+export SSL_CERT=/path/to/cert.pem
+export SSL_KEY=/path/to/key.pem
+```
+
+证书可以是:
+- 文件路径: 系统将读取指定文件
+- 证书内容: 直接在环境变量中提供 PEM 格式的证书内容
+
+### 非 BYOC 模式 (自动获取证书)
+
+当 `CLUSTER_BYOC=false` (默认) 时，系统会自动从主控服务器请求证书:
+
+1. 启动时连接到主控服务器
+2. 通过 Socket.IO 请求 SSL 证书
+3. 证书保存到 `/tmp/openbmclapi/cert.pem` 和 `/tmp/openbmclapi/key.pem`
+
+### 启用 HTTPS
+
+获取证书后，需要配置 Ktor 使用 HTTPS。编辑 `application.yaml`:
+
+```yaml
+ktor:
+    deployment:
+        sslPort: 443
+        security:
+            ssl:
+                keyStore: /path/to/keystore.jks
+                keyAlias: openbmclapi
+                keyStorePassword: changeit
+                privateKeyPassword: changeit
+```
+
+**注意**: Ktor 需要 JKS 格式的 keystore，而不是 PEM 文件。使用以下命令转换:
+
+```bash
+# 将 PEM 转换为 PKCS12
+openssl pkcs12 -export \
+    -in /tmp/openbmclapi/cert.pem \
+    -inkey /tmp/openbmclapi/key.pem \
+    -out /tmp/openbmclapi/keystore.p12 \
+    -name openbmclapi \
+    -passout pass:changeit
+
+# 将 PKCS12 转换为 JKS
+keytool -importkeystore \
+    -srckeystore /tmp/openbmclapi/keystore.p12 \
+    -srcstoretype PKCS12 \
+    -srcstorepass changeit \
+    -destkeystore /tmp/openbmclapi/keystore.jks \
+    -deststoretype JKS \
+    -deststorepass changeit
+```
+
 ## 从 TypeScript 版本迁移的说明
 
 此 Kotlin 实现保持与原始 TypeScript 版本的 API 兼容性，同时提供:
@@ -252,7 +315,11 @@ MIT License - 参见 LICENSE 文件
 
 ## 状态
 
-本项目正在积极开发中。以下特性待实现:
+本项目正在积极开发中。核心功能已实现:
 
-- UPNP 支持
+- ✅ 集群连接和认证
+- ✅ 文件同步
+- ✅ 多种存储后端支持
+- ✅ HTTPS 证书管理 (BYOC 和自动获取)
+- ⏳ UPNP 支持 (待实现)
 
