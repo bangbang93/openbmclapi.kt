@@ -65,6 +65,7 @@ dependencies {
     ksp(libs.koin.ksp.compiler)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.mockk)
 }
 
 // Configure KSP to generate code in the correct source set
