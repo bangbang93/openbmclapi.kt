@@ -24,11 +24,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.socket.client.IO
 import io.socket.client.Socket
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.decodeFromByteArray
 import org.koin.core.annotation.Single
 import java.net.URI
@@ -41,7 +41,7 @@ class ClusterService(
     private val storage: IStorage,
     private val tokenManager: TokenManager,
     private val httpClient: HttpClient,
-) {
+) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     lateinit var socket: Socket
     var isEnabled = false
     var wantEnable = false
@@ -91,17 +91,15 @@ class ClusterService(
 
         val sema = Semaphore(syncConfig.concurrency)
 
-        withContext(Dispatchers.IO) {
-            missingFiles.forEach { file ->
-                sema.withPermit {
-                    async {
-                        try {
-                            downloadFile(file)
-                            logger.debug { "Downloaded: ${file.path}" }
-                        } catch (e: Exception) {
-                            logger.error(e) { "Failed to download ${file.path}" }
-                            throw e
-                        }
+        missingFiles.forEach { file ->
+            sema.withPermit {
+                async {
+                    try {
+                        downloadFile(file)
+                        logger.debug { "Downloaded: ${file.path}" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to download ${file.path}" }
+                        throw e
                     }
                 }
             }

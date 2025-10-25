@@ -1,7 +1,6 @@
 package com.bangbang93.openbmclapi.agent.service
 
 import com.bangbang93.openbmclapi.agent.config.AGENT_PROTOCOL_VERSION
-import com.bangbang93.openbmclapi.agent.config.ClusterConfig
 import com.bangbang93.openbmclapi.agent.config.Version
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.storage.IStorage
@@ -18,11 +17,10 @@ private val logger = KotlinLogging.logger {}
 
 @Single
 class BootstrapService(
-    private val config: ClusterConfig,
     private val storage: IStorage,
     private val tokenManager: TokenManager,
     private val clusterService: ClusterService,
-    private val counters: Counters,
+    counters: Counters,
 ) {
     private val version = Version.current
     private val keepaliveService = KeepaliveService(1.minutes, clusterService, counters)
