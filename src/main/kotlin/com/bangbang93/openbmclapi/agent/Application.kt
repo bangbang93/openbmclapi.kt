@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
 import org.koin.ksp.generated.module
 import org.koin.ktor.ext.inject
+import org.koin.logger.slf4jLogger
 import java.io.File
 import java.io.FileInputStream
 import java.security.KeyStore
@@ -28,6 +29,7 @@ suspend fun main() {
     // Start Koin for dependency injection
     val koinApp =
         startKoin {
+            slf4jLogger()
             modules(
                 AppModule().module,
             )
@@ -110,7 +112,6 @@ suspend fun main() {
 }
 
 suspend fun Application.module() {
-    configureFrameworks()
     configureSerialization()
     configureMonitoring()
     configureHTTP()
