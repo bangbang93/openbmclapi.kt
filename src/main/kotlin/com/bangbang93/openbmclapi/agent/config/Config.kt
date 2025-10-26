@@ -3,6 +3,7 @@ package com.bangbang93.openbmclapi.agent.config
 import io.github.cdimascio.dotenv.Dotenv
 import io.ktor.server.application.ApplicationEnvironment
 import io.ktor.server.engine.applicationEnvironment
+import io.ktor.server.engine.configure
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 
@@ -34,7 +35,10 @@ data class ConfigFlavor(
 )
 
 @Single
-fun getEnv() = applicationEnvironment()
+fun getEnv() =
+    applicationEnvironment {
+        configure("application.yaml")
+    }
 
 @Single
 fun getConfig(env: ApplicationEnvironment): ClusterConfig {
