@@ -1,7 +1,5 @@
 ktor:
     application:
-        modules:
-            - com.bangbang93.openbmclapi.agent.ApplicationKt.module
 
 # OpenBMCLAPI Configuration
 # Most settings can be provided via environment variables as well

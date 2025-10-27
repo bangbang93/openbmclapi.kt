@@ -7,13 +7,10 @@ import com.bangbang93.openbmclapi.agent.service.CertificateService
 import com.bangbang93.openbmclapi.agent.service.ClusterService
 import com.bangbang93.openbmclapi.agent.service.TokenManager
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.server.application.Application
-import io.ktor.server.application.ApplicationEnvironment
-import io.ktor.server.application.ApplicationStopPreparing
-import io.ktor.server.engine.connector
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.engine.sslConnector
-import io.ktor.server.netty.Netty
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.startKoin
 import org.koin.ksp.generated.module
@@ -119,7 +116,11 @@ suspend fun Application.module() {
 
     val bootstrapService by inject<BootstrapService>()
 
-    bootstrapService.bootstrap()
+    monitor.subscribe(ServerReady) {
+        runBlocking {
+            bootstrapService.bootstrap()
+        }
+    }
 
     // Register shutdown hook
     monitor.subscribe(ApplicationStopPreparing) {
