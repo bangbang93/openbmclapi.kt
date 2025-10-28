@@ -34,5 +34,3 @@ data class MappingHandle(
     val ttlSeconds: Int,
     val description: String,
 )
-
-

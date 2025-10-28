@@ -19,13 +19,14 @@ class NatService(
     fun startIfEnabled(): InetAddress? {
         if (!config.enableUpnp) return null
 
-        val mapped = mapper.map(
-            privatePort = config.port,
-            publicPort = config.clusterPublicPort,
-            protocol = Protocol.TCP,
-            ttlSeconds = 3600,
-            description = "openbmclapi",
-        )
+        val mapped =
+            mapper.map(
+                privatePort = config.port,
+                publicPort = config.clusterPublicPort,
+                protocol = Protocol.TCP,
+                ttlSeconds = 3600,
+                description = "openbmclapi",
+            )
         handle = mapped
         external = mapper.externalIp()
 
@@ -34,12 +35,17 @@ class NatService(
         logger.info { "UPnP/NAT 端口映射成功，外网 IP: ${ip.hostAddress}" }
 
         // 关闭时清理端口映射
-        Runtime.getRuntime().addShutdownHook(Thread({
-            try {
-                handle?.let { mapper.unmap(it) }
-            } catch (_: Exception) {
-            }
-        }, "nat-unmap"))
+        Runtime.getRuntime().addShutdownHook(
+            Thread(
+                {
+                    try {
+                        handle?.let { mapper.unmap(it) }
+                    } catch (_: Exception) {
+                    }
+                },
+                "nat-unmap",
+            ),
+        )
 
         return ip
     }

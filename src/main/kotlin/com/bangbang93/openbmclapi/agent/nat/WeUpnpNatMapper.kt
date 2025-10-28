@@ -1,9 +1,9 @@
 package com.bangbang93.openbmclapi.agent.nat
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.net.InetAddress
 import org.bitlet.weupnp.GatewayDevice
 import org.bitlet.weupnp.GatewayDiscover
+import java.net.InetAddress
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,10 +22,25 @@ class WeUpnpNatMapper : NatMapper {
         val gw = discover.validGateway ?: error("未发现可用的 UPnP IGD 网关")
         device = gw
 
-        val ok = when (protocol) {
-            Protocol.TCP -> gw.addPortMapping(publicPort, privatePort, gw.localAddress.hostAddress, "TCP", description)
-            Protocol.UDP -> gw.addPortMapping(publicPort, privatePort, gw.localAddress.hostAddress, "UDP", description)
-        }
+        val ok =
+            when (protocol) {
+                Protocol.TCP ->
+                    gw.addPortMapping(
+                        publicPort,
+                        privatePort,
+                        gw.localAddress.hostAddress,
+                        "TCP",
+                        description,
+                    )
+                Protocol.UDP ->
+                    gw.addPortMapping(
+                        publicPort,
+                        privatePort,
+                        gw.localAddress.hostAddress,
+                        "UDP",
+                        description,
+                    )
+            }
         if (!ok) error("UPnP 端口映射失败: $protocol $publicPort->$privatePort")
 
         logger.info { "UPnP 映射成功: $protocol $publicPort->$privatePort" }
@@ -37,8 +52,22 @@ class WeUpnpNatMapper : NatMapper {
         return try {
             val dev = device ?: return false
             when (handle.protocol) {
-                Protocol.TCP -> dev.addPortMapping(handle.publicPort, handle.privatePort, dev.localAddress.hostAddress, "TCP", handle.description)
-                Protocol.UDP -> dev.addPortMapping(handle.publicPort, handle.privatePort, dev.localAddress.hostAddress, "UDP", handle.description)
+                Protocol.TCP ->
+                    dev.addPortMapping(
+                        handle.publicPort,
+                        handle.privatePort,
+                        dev.localAddress.hostAddress,
+                        "TCP",
+                        handle.description,
+                    )
+                Protocol.UDP ->
+                    dev.addPortMapping(
+                        handle.publicPort,
+                        handle.privatePort,
+                        dev.localAddress.hostAddress,
+                        "UDP",
+                        handle.description,
+                    )
             }
             true
         } catch (e: Exception) {
