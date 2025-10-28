@@ -28,6 +28,7 @@ import io.socket.client.Socket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.decodeFromByteArray
@@ -92,19 +93,21 @@ class ClusterService(
 
         val sema = Semaphore(syncConfig.concurrency)
 
-        missingFiles.forEach { file ->
-            sema.withPermit {
-                async {
-                    try {
-                        downloadFile(file)
-                        logger.debug { "Downloaded: ${file.path}" }
-                    } catch (e: Exception) {
-                        logger.error(e) { "Failed to download ${file.path}" }
-                        throw e
-                    }
-                }
-            }
-        }
+		val jobs = missingFiles.map { file ->
+			async {
+				sema.withPermit {
+					try {
+						downloadFile(file)
+						logger.debug { "Downloaded: ${file.path}" }
+					} catch (e: Exception) {
+						logger.error(e) { "Failed to download ${file.path}" }
+						throw e
+					}
+				}
+			}
+		}
+
+		jobs.awaitAll()
 
         logger.info { "Sync completed: ${missingFiles.size} files" }
     }
