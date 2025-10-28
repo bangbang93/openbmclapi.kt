@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.kotlin.retry)
     implementation(libs.bouncycastle.prov)
     implementation(libs.bouncycastle.pkix)
+    implementation("org.bitlet:weupnp:0.1.4")
     ksp(libs.koin.ksp.compiler)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
