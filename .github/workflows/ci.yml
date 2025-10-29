@@ -2,9 +2,9 @@ name: CI检查
 
 on:
   push:
-    branches: [ "main", "copilot/**" ]
+    branches: [ "master", "copilot/**" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -12,26 +12,26 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: 设置 JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: gradle
-    
+
     - name: 授予gradlew执行权限
       run: chmod +x gradlew
-    
+
     - name: Ktlint 检查
       run: ./gradlew ktlintCheck --no-daemon
-    
+
     - name: 编译检查
       run: ./gradlew build --no-daemon
-    
+
     - name: 运行测试
       run: ./gradlew test --no-daemon
-    
+
     - name: 上传测试报告
       if: always()
       uses: actions/upload-artifact@v4
