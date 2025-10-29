@@ -93,21 +93,21 @@ class ClusterService(
 
         val sema = Semaphore(syncConfig.concurrency)
 
-		val jobs = missingFiles.map { file ->
-			async {
-				sema.withPermit {
-					try {
-						downloadFile(file)
-						logger.debug { "Downloaded: ${file.path}" }
-					} catch (e: Exception) {
-						logger.error(e) { "Failed to download ${file.path}" }
-						throw e
-					}
-				}
-			}
-		}
+        val jobs = missingFiles.map { file ->
+            async {
+                sema.withPermit {
+                    try {
+                        downloadFile(file)
+                        logger.debug { "Downloaded: ${file.path}" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to download ${file.path}" }
+                        throw e
+                    }
+                }
+            }
+        }
 
-		jobs.awaitAll()
+        jobs.awaitAll()
 
         logger.info { "Sync completed: ${missingFiles.size} files" }
     }
