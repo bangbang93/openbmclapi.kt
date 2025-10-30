@@ -13,7 +13,9 @@ class NatService(
     private val config: ClusterConfig,
 ) {
     private val mapper: NatMapper = WeUpnpNatMapper()
+
     @Volatile private var handle: MappingHandle? = null
+
     @Volatile private var external: InetAddress? = null
 
     fun startIfEnabled(): InetAddress? {
@@ -63,5 +65,3 @@ class NatService(
         }
     }
 }
-
-
