@@ -9,6 +9,7 @@ import com.bangbang93.openbmclapi.agent.model.FileList
 import com.bangbang93.openbmclapi.agent.model.OpenbmclapiAgentConfiguration
 import com.bangbang93.openbmclapi.agent.model.SyncConfig
 import com.bangbang93.openbmclapi.agent.storage.IStorage
+import com.bangbang93.openbmclapi.agent.nat.NatService
 import com.bangbang93.openbmclapi.agent.util.HashUtil
 import com.bangbang93.openbmclapi.agent.util.emitAck
 import com.github.avrokotlin.avro4k.Avro
@@ -42,6 +43,7 @@ class ClusterService(
     private val storage: IStorage,
     private val tokenManager: TokenManager,
     private val httpClient: HttpClient,
+    private val natService: NatService,
 ) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
     lateinit var socket: Socket
     var isEnabled = false
@@ -172,9 +174,18 @@ class ClusterService(
 
         logger.trace { "Enabling cluster" }
 
+        val upnpIp = try {
+            natService.startIfEnabled()
+        } catch (e: Exception) {
+            logger.error(e) { "UPnP/NAT 端口映射失败" }
+            throw e
+        }
+
+        val hostForEnable = config.clusterIp ?: upnpIp?.hostAddress
+
         val enableRequest =
             EnableRequest(
-                host = config.clusterIp,
+                host = hostForEnable,
                 port = config.clusterPublicPort,
                 version = AGENT_PROTOCOL_VERSION,
                 byoc = config.byoc,

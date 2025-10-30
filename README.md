@@ -269,5 +269,5 @@ MIT License - 参见 LICENSE 文件
 - ✅ 文件同步
 - ✅ 多种存储后端支持
 - ✅ HTTPS 证书管理 (BYOC 和自动获取)
-- ⏳ UPNP 支持 (待实现)
+- ✅ UPNP 支持 (使用weupnp)
 
