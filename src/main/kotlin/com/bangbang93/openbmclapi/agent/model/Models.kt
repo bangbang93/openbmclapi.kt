@@ -6,33 +6,15 @@ import kotlinx.serialization.Serializable
 import org.koin.core.annotation.Single
 
 @Serializable
-data class FileInfo(
-    val path: String,
-    val hash: String,
-    val size: Long,
-    val mtime: Long,
-)
+data class FileInfo(val path: String, val hash: String, val size: Long, val mtime: Long)
 
-@Serializable
-data class FileList(
-    val files: List<FileInfo>,
-)
+@Serializable data class FileList(val files: List<FileInfo>)
 
-@Serializable
-data class SyncConfig(
-    val source: String,
-    val concurrency: Int,
-)
+@Serializable data class SyncConfig(val source: String, val concurrency: Int)
 
-@Serializable
-data class OpenbmclapiAgentConfiguration(
-    val sync: SyncConfig,
-)
+@Serializable data class OpenbmclapiAgentConfiguration(val sync: SyncConfig)
 
-@Serializable
-data class ChallengeResponse(
-    val challenge: String,
-)
+@Serializable data class ChallengeResponse(val challenge: String)
 
 @Serializable
 data class TokenRequest(
@@ -42,18 +24,9 @@ data class TokenRequest(
     val token: String? = null,
 )
 
-@Serializable
-data class TokenResponse(
-    val token: String,
-    val ttl: Long,
-)
+@Serializable data class TokenResponse(val token: String, val ttl: Long)
 
-@Serializable
-data class KeepAliveRequest(
-    val time: String,
-    val hits: Long,
-    val bytes: Long,
-)
+@Serializable data class KeepAliveRequest(val time: String, val hits: Long, val bytes: Long)
 
 @Serializable
 data class EnableRequest(
@@ -65,20 +38,13 @@ data class EnableRequest(
     val flavor: Map<String, String>,
 )
 
-@Serializable
-data class CertificateResponse(
-    val cert: String,
-    val key: String,
-)
+@Serializable data class CertificateResponse(val cert: String, val key: String)
 
 @OptIn(ExperimentalAtomicApi::class)
 @Single
 class Counters {
-  val hits = AtomicLong(0L)
-  val bytes = AtomicLong(0L)
+    val hits = AtomicLong(0L)
+    val bytes = AtomicLong(0L)
 }
 
-data class GCCounter(
-    val count: Int,
-    val size: Long,
-)
+data class GCCounter(val count: Int, val size: Long)

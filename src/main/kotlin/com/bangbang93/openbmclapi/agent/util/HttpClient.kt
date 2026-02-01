@@ -13,15 +13,15 @@ import org.koin.core.annotation.Single
 @Single
 fun httpClient() =
     HttpClient(CIO) {
-      install(ContentNegotiation) {
-        json(
-            Json {
-              ignoreUnknownKeys = true
-              prettyPrint = false
-            },
-        )
-      }
-      install(UserAgent) {
-        agent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/${Version.current}"
-      }
+        install(ContentNegotiation) {
+            json(
+                Json {
+                    ignoreUnknownKeys = true
+                    prettyPrint = false
+                }
+            )
+        }
+        install(UserAgent) {
+            agent = "openbmclapi-cluster/$AGENT_PROTOCOL_VERSION openbmclapi.kt/${Version.current}"
+        }
     }

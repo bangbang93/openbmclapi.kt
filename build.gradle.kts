@@ -72,9 +72,7 @@ dependencies {
 // Configure KSP to generate code in the correct source set
 kotlin { sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") } }
 
-ktfmt {
-    kotlinLangStyle()
-}
+ktfmt { kotlinLangStyle() }
 
 sonar {
     properties {

@@ -45,171 +45,165 @@ class ClusterService(
     private val httpClient: HttpClient,
     private val natService: NatService,
 ) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
-  lateinit var socket: Socket
-  var isEnabled = false
-  var wantEnable = false
+    lateinit var socket: Socket
+    var isEnabled = false
+    var wantEnable = false
 
-  suspend fun getFileList(lastModified: Long? = null): FileList {
-    val response =
-        httpClient.get("${config.clusterBmclapi}/openbmclapi/files") {
-          header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-          if (lastModified != null) {
-            parameter("lastModified", lastModified)
-          }
+    suspend fun getFileList(lastModified: Long? = null): FileList {
+        val response =
+            httpClient.get("${config.clusterBmclapi}/openbmclapi/files") {
+                header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+                if (lastModified != null) {
+                    parameter("lastModified", lastModified)
+                }
+            }
+
+        if (response.status == HttpStatusCode.NoContent) {
+            return FileList(emptyList())
         }
 
-    if (response.status == HttpStatusCode.NoContent) {
-      return FileList(emptyList())
+        val body = response.body<ByteArray>()
+        return Avro.decodeFromByteArray<FileList>(decompress(body, 20 * 1024 * 1024))
     }
 
-    val body = response.body<ByteArray>()
-    return Avro.decodeFromByteArray<FileList>(decompress(body, 20 * 1024 * 1024))
-  }
+    suspend fun getConfiguration(): OpenbmclapiAgentConfiguration =
+        httpClient
+            .get("${config.clusterBmclapi}/openbmclapi/configuration") {
+                header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+            }
+            .body()
 
-  suspend fun getConfiguration(): OpenbmclapiAgentConfiguration =
-      httpClient
-          .get("${config.clusterBmclapi}/openbmclapi/configuration") {
-            header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-          }
-          .body()
-
-  suspend fun syncFiles(
-      fileList: FileList,
-      syncConfig: SyncConfig,
-  ) {
-    val storageReady = storage.check()
-    if (!storageReady) {
-      throw Exception("Storage is not ready")
-    }
-
-    logger.info { "Checking for missing files" }
-    val missingFiles = storage.getMissingFiles(fileList.files)
-
-    if (missingFiles.isEmpty()) {
-      logger.info { "No missing files" }
-      return
-    }
-
-    logger.info { "Missing ${missingFiles.size} files, starting sync" }
-    logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
-
-    val sema = Semaphore(syncConfig.concurrency)
-
-    missingFiles.forEach { file ->
-      sema.withPermit {
-        async {
-          try {
-            downloadFile(file)
-            logger.debug { "Downloaded: ${file.path}" }
-          } catch (e: Exception) {
-            logger.error(e) { "Failed to download ${file.path}" }
-            throw e
-          }
-        }
-      }
-    }
-
-    logger.info { "Sync completed: ${missingFiles.size} files" }
-  }
-
-  private suspend fun downloadFile(file: FileInfo) {
-    val response =
-        retry(stopAtAttempts(5)) {
-          httpClient.get("${config.clusterBmclapi}${file.path}") {
-            header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
-          }
+    suspend fun syncFiles(fileList: FileList, syncConfig: SyncConfig) {
+        val storageReady = storage.check()
+        if (!storageReady) {
+            throw Exception("Storage is not ready")
         }
 
-    val content = response.body<ByteArray>()
+        logger.info { "Checking for missing files" }
+        val missingFiles = storage.getMissingFiles(fileList.files)
 
-    if (!HashUtil.validateFile(content, file.hash)) {
-      throw Exception("File validation failed for ${file.path}")
+        if (missingFiles.isEmpty()) {
+            logger.info { "No missing files" }
+            return
+        }
+
+        logger.info { "Missing ${missingFiles.size} files, starting sync" }
+        logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
+
+        val sema = Semaphore(syncConfig.concurrency)
+
+        missingFiles.forEach { file ->
+            sema.withPermit {
+                async {
+                    try {
+                        downloadFile(file)
+                        logger.debug { "Downloaded: ${file.path}" }
+                    } catch (e: Exception) {
+                        logger.error(e) { "Failed to download ${file.path}" }
+                        throw e
+                    }
+                }
+            }
+        }
+
+        logger.info { "Sync completed: ${missingFiles.size} files" }
     }
 
-    storage.writeFile(HashUtil.hashToFilename(file.hash), content, file)
-  }
+    private suspend fun downloadFile(file: FileInfo) {
+        val response =
+            retry(stopAtAttempts(5)) {
+                httpClient.get("${config.clusterBmclapi}${file.path}") {
+                    header(HttpHeaders.Authorization, "Bearer ${tokenManager.getToken()}")
+                }
+            }
 
-  suspend fun connect() {
-    // Don't reconnect if already connected
-    if (::socket.isInitialized && socket.connected()) {
-      logger.debug { "Already connected to server" }
-      return
+        val content = response.body<ByteArray>()
+
+        if (!HashUtil.validateFile(content, file.hash)) {
+            throw Exception("File validation failed for ${file.path}")
+        }
+
+        storage.writeFile(HashUtil.hashToFilename(file.hash), content, file)
     }
 
-    val opts =
-        IO.Options().apply {
-          transports = arrayOf("websocket")
-          auth = mapOf("token" to tokenManager.getToken())
+    suspend fun connect() {
+        // Don't reconnect if already connected
+        if (::socket.isInitialized && socket.connected()) {
+            logger.debug { "Already connected to server" }
+            return
         }
 
-    socket =
-        IO.socket(URI(config.clusterBmclapi), opts).apply {
-          on(Socket.EVENT_CONNECT) { logger.debug { "Connected to server" } }
+        val opts =
+            IO.Options().apply {
+                transports = arrayOf("websocket")
+                auth = mapOf("token" to tokenManager.getToken())
+            }
 
-          on(Socket.EVENT_DISCONNECT) { args ->
-            val reason = args.firstOrNull()?.toString() ?: "unknown"
-            logger.warn { "Disconnected from server: $reason" }
-            isEnabled = false
-          }
+        socket =
+            IO.socket(URI(config.clusterBmclapi), opts).apply {
+                on(Socket.EVENT_CONNECT) { logger.debug { "Connected to server" } }
 
-          on("message") { args -> logger.info { "Message: ${args.firstOrNull()}" } }
+                on(Socket.EVENT_DISCONNECT) { args ->
+                    val reason = args.firstOrNull()?.toString() ?: "unknown"
+                    logger.warn { "Disconnected from server: $reason" }
+                    isEnabled = false
+                }
 
-          on("exception") { args -> logger.error { "Exception: ${args.firstOrNull()}" } }
+                on("message") { args -> logger.info { "Message: ${args.firstOrNull()}" } }
 
-          on("warden-error") { args -> logger.warn { "Warden error: ${args.firstOrNull()}" } }
+                on("exception") { args -> logger.error { "Exception: ${args.firstOrNull()}" } }
 
-          connect()
-        }
-  }
+                on("warden-error") { args -> logger.warn { "Warden error: ${args.firstOrNull()}" } }
 
-  suspend fun enable() {
-    if (isEnabled) return
+                connect()
+            }
+    }
 
-    logger.trace { "Enabling cluster" }
+    suspend fun enable() {
+        if (isEnabled) return
 
-    val upnpIp =
-        try {
-          natService.startIfEnabled()
-        } catch (e: Exception) {
-          logger.error(e) { "UPnP/NAT 端口映射失败" }
-          throw e
-        }
+        logger.trace { "Enabling cluster" }
 
-    val hostForEnable = config.clusterIp ?: upnpIp?.hostAddress
+        val upnpIp =
+            try {
+                natService.startIfEnabled()
+            } catch (e: Exception) {
+                logger.error(e) { "UPnP/NAT 端口映射失败" }
+                throw e
+            }
 
-    val enableRequest =
-        EnableRequest(
-            host = hostForEnable,
-            port = config.clusterPublicPort,
-            version = AGENT_PROTOCOL_VERSION,
-            byoc = config.byoc,
-            flavor =
-                mapOf(
-                    "runtime" to config.flavor.runtime,
-                    "storage" to config.flavor.storage,
-                ),
-        )
+        val hostForEnable = config.clusterIp ?: upnpIp?.hostAddress
 
-    socket.emitAck("enable", enableRequest)
+        val enableRequest =
+            EnableRequest(
+                host = hostForEnable,
+                port = config.clusterPublicPort,
+                version = AGENT_PROTOCOL_VERSION,
+                byoc = config.byoc,
+                flavor =
+                    mapOf("runtime" to config.flavor.runtime, "storage" to config.flavor.storage),
+            )
 
-    isEnabled = true
-    wantEnable = true
-    logger.info { "Cluster enabled" }
-  }
+        socket.emitAck("enable", enableRequest)
 
-  suspend fun disable() {
-    wantEnable = false
-    isEnabled = false
-    socket.disconnect()
-    logger.info { "Cluster disabled" }
-  }
+        isEnabled = true
+        wantEnable = true
+        logger.info { "Cluster enabled" }
+    }
 
-  suspend fun requestCert(): CertificateResponse {
-    logger.debug { "Requesting certificate from server" }
-    return socket.emitAck<CertificateResponse>("request-cert")
-  }
+    suspend fun disable() {
+        wantEnable = false
+        isEnabled = false
+        socket.disconnect()
+        logger.info { "Cluster disabled" }
+    }
 
-  fun close() {
-    socket?.close()
-  }
+    suspend fun requestCert(): CertificateResponse {
+        logger.debug { "Requesting certificate from server" }
+        return socket.emitAck<CertificateResponse>("request-cert")
+    }
+
+    fun close() {
+        socket?.close()
+    }
 }

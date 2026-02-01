@@ -8,9 +8,9 @@ import io.ktor.server.plugins.callid.callIdMdc
 import io.ktor.server.plugins.calllogging.CallLogging
 
 fun Application.configureMonitoring() {
-  install(CallId) {
-    header(HttpHeaders.XRequestId)
-    verify { callId: String -> callId.isNotEmpty() }
-  }
-  install(CallLogging) { callIdMdc("call-id") }
+    install(CallId) {
+        header(HttpHeaders.XRequestId)
+        verify { callId: String -> callId.isNotEmpty() }
+    }
+    install(CallLogging) { callIdMdc("call-id") }
 }

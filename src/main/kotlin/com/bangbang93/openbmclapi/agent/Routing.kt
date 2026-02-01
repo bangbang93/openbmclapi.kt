@@ -13,14 +13,14 @@ import io.ktor.server.routing.routing
 import org.koin.ktor.ext.inject
 
 fun Application.configureRouting() {
-  val config by inject<ClusterConfig>()
-  val storage by inject<IStorage>()
-  val counters by inject<Counters>()
+    val config by inject<ClusterConfig>()
+    val storage by inject<IStorage>()
+    val counters by inject<Counters>()
 
-  install(AutoHeadResponse)
-  routing {
-    get("/") { call.respondText("OpenBMCLAPI Cluster - Kotlin Edition") }
+    install(AutoHeadResponse)
+    routing {
+        get("/") { call.respondText("OpenBMCLAPI Cluster - Kotlin Edition") }
 
-    clusterRoutes(config, storage, counters)
-  }
+        clusterRoutes(config, storage, counters)
+    }
 }
