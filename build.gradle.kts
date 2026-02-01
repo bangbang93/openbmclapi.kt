@@ -72,9 +72,7 @@ dependencies {
     testImplementation(libs.kotest.assertions.core)
 }
 
-kotlin {
-    jvmToolchain(17)
-}
+kotlin { jvmToolchain(17) }
 
 ktfmt { kotlinLangStyle() }
 
