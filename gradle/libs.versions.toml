@@ -18,6 +18,7 @@ aliyun-oss = "3.18.1"
 kotlin-retry = "2.0.2"
 mockk = "1.13.14"
 bouncycastle = "1.79"
+weupnp = "0.1.4"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -57,6 +58,7 @@ kotlin-retry = { module = "com.michael-bull.kotlin-retry:kotlin-retry", version.
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 bouncycastle-prov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = "bouncycastle" }
 bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
+weupnp = { module = "org.bitlet:weupnp", version.ref = "weupnp" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

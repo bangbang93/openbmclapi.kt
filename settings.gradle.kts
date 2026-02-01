@@ -1,3 +1,3 @@
-rootProject.name = "openbmclapi-agent"
+rootProject.name = "openbmclapi.kt"
 
 dependencyResolutionManagement { repositories { mavenCentral() } }
