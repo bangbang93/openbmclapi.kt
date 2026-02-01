@@ -165,10 +165,10 @@ Use [debugger.agent.md](agents/debugger.agent.md)
 ./gradlew build
 
 # Format code
-./gradlew ktlintFormat
+./gradlew ktfmtFormat
 
 # Check style
-./gradlew ktlintCheck
+./gradlew ktfmtCheck
 
 # Run tests
 ./gradlew test

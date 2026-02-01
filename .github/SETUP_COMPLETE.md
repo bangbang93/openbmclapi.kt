@@ -147,7 +147,7 @@ These agents provide expert-level assistance for complex tasks:
 ### GitHub Actions Workflow
 - [.github/workflows/copilot-setup-steps.yml](.github/workflows/copilot-setup-steps.yml)
   - Automated build verification
-  - Code style checking with ktlint
+   - Code style checking with ktfmt
   - Test execution
   - Gradle build optimization
 
@@ -212,7 +212,7 @@ All files are automatically recognized by GitHub Copilot extension in VS Code
 **Preparing PR**:
 1. Reference [code-review.instructions.md](.github/instructions/code-review.instructions.md)
 2. Use [code-review.prompt.md](.github/prompts/code-review.prompt.md)
-3. Run verification: `./gradlew ktlintCheck && ./gradlew build`
+3. Run verification: `./gradlew ktfmtCheck && ./gradlew build`
 
 **Debugging Issues**:
 1. Use [debugger.agent.md](.github/agents/debugger.agent.md)
@@ -224,8 +224,8 @@ All files are automatically recognized by GitHub Copilot extension in VS Code
 All setup includes GitHub Actions workflow for automated verification:
 
 ```bash
-./gradlew ktlintFormat    # Auto-format code
-./gradlew ktlintCheck     # Check code style
+./gradlew ktfmtFormat     # Auto-format code
+./gradlew ktfmtCheck      # Check code style
 ./gradlew build           # Build and test
 ./gradlew test            # Run tests
 ```
@@ -327,7 +327,7 @@ ls -la .github/workflows/copilot-setup-steps.yml
 ./gradlew build
 
 # Verify code style
-./gradlew ktlintCheck
+./gradlew ktfmtCheck
 ```
 
 ## Success Indicators

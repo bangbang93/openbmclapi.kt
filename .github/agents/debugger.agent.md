@@ -289,6 +289,6 @@ If unable to resolve:
 ./gradlew run --info
 
 # Format and check code style
-./gradlew ktlintFormat
-./gradlew ktlintCheck
+./gradlew ktfmtFormat
+./gradlew ktfmtCheck
 ```

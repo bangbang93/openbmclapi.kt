@@ -1,9 +1,9 @@
 package com.bangbang93.openbmclapi.agent.model
 
-import kotlinx.serialization.Serializable
-import org.koin.core.annotation.Single
 import kotlin.concurrent.atomics.AtomicLong
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlinx.serialization.Serializable
+import org.koin.core.annotation.Single
 
 @Serializable
 data class FileInfo(
@@ -74,8 +74,8 @@ data class CertificateResponse(
 @OptIn(ExperimentalAtomicApi::class)
 @Single
 class Counters {
-    val hits = AtomicLong(0L)
-    val bytes = AtomicLong(0L)
+  val hits = AtomicLong(0L)
+  val bytes = AtomicLong(0L)
 }
 
 data class GCCounter(

@@ -32,11 +32,11 @@ OpenBMCLAPI Kotlin Agent is a distributed file distribution network node for acc
 # Run a specific test method
 ./gradlew test --tests "ApplicationTest.主页返回OK"
 
-# Format code with ktlint
-./gradlew ktlintFormat
+# Format code with ktfmt
+./gradlew ktfmtFormat
 
 # Check code style
-./gradlew ktlintCheck
+./gradlew ktfmtCheck
 
 # Create executable JAR
 ./gradlew buildFatJar
@@ -222,10 +222,10 @@ class ServiceTest {
     fun `should handle normal case`() {
         // Arrange
         val input = createTestInput()
-        
+
         // Act
         val result = serviceUnderTest.process(input)
-        
+
         // Assert
         assertEquals(expected, result)
     }
@@ -247,7 +247,7 @@ fun `integration test with test application`() = testApplication {
     application {
         runBlocking { this@application.appModule() }
     }
-    
+
     client.get("/").apply {
         assertEquals(HttpStatusCode.OK, status)
     }
@@ -286,7 +286,7 @@ suspend fun processFiles() = coroutineScope {
 ## Development Workflow
 
 1. **Before Making Changes:**
-   - Run `./gradlew ktlintCheck` to verify code style
+    - Run `./gradlew ktfmtCheck` to verify code style
    - Run `./gradlew test` to ensure all tests pass
 
 2. **During Development:**
@@ -295,7 +295,7 @@ suspend fun processFiles() = coroutineScope {
    - Follow existing patterns and conventions
 
 3. **Before Committing:**
-   - Run `./gradlew ktlintFormat` to format code
+    - Run `./gradlew ktfmtFormat` to format code
    - Run `./gradlew build` to ensure everything compiles
    - Run `./gradlew test` to verify all tests pass
 

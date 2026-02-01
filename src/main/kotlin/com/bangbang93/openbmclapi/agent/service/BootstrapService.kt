@@ -5,13 +5,13 @@ import com.bangbang93.openbmclapi.agent.config.Version
 import com.bangbang93.openbmclapi.agent.model.Counters
 import com.bangbang93.openbmclapi.agent.storage.IStorage
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
-import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
@@ -22,102 +22,102 @@ class BootstrapService(
     private val clusterService: ClusterService,
     counters: Counters,
 ) {
-    private val version = Version.current
-    private val keepaliveService = KeepaliveService(1.minutes, clusterService, counters)
-    private var checkFileJob: Job? = null
+  private val version = Version.current
+  private val keepaliveService = KeepaliveService(1.minutes, clusterService, counters)
+  private var checkFileJob: Job? = null
 
-    suspend fun bootstrap() {
-        logger.info { "Booting OpenBMCLAPI Kotlin $version, protocol version: $AGENT_PROTOCOL_VERSION" }
+  suspend fun bootstrap() {
+    logger.info { "Booting OpenBMCLAPI Kotlin $version, protocol version: $AGENT_PROTOCOL_VERSION" }
 
-        // Get initial token
-        tokenManager.getToken()
+    // Get initial token
+    tokenManager.getToken()
 
-        // Connect to cluster
-        clusterService.connect()
+    // Connect to cluster
+    clusterService.connect()
 
-        // Check storage
-        val storageReady = storage.check()
-        if (!storageReady) {
-            throw Exception("Storage is not ready")
+    // Check storage
+    val storageReady = storage.check()
+    if (!storageReady) {
+      throw Exception("Storage is not ready")
+    }
+
+    // Get configuration and file list
+    val configuration = clusterService.getConfiguration()
+    val files = clusterService.getFileList()
+    logger.info { "${files.files.size} files available" }
+
+    // Sync files
+    try {
+      clusterService.syncFiles(files, configuration.sync)
+    } catch (e: Exception) {
+      logger.error(e) { "Sync failed" }
+      throw e
+    }
+
+    // Garbage collect old files
+    logger.info { "Starting garbage collection" }
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        val result = storage.gc(files.files)
+        if (result.count == 0) {
+          logger.info { "No expired files" }
+        } else {
+          logger.info { "GC complete: deleted ${result.count} files, freed ${result.size} bytes" }
         }
+      } catch (e: Exception) {
+        logger.error(e) { "GC error" }
+      }
+    }
 
-        // Get configuration and file list
-        val configuration = clusterService.getConfiguration()
-        val files = clusterService.getFileList()
-        logger.info { "${files.files.size} files available" }
+    // Enable cluster
+    try {
+      logger.info { "Requesting to go online" }
+      clusterService.enable()
+      logger.info { "Cluster enabled, serving ${files.files.size} files" }
 
-        // Sync files
-        try {
-            clusterService.syncFiles(files, configuration.sync)
-        } catch (e: Exception) {
-            logger.error(e) { "Sync failed" }
-            throw e
-        }
+      // Start keepalive
+      keepaliveService.start(clusterService.socket)
 
-        // Garbage collect old files
-        logger.info { "Starting garbage collection" }
+      // Schedule periodic file check
+      scheduleFileCheck(files.files.maxOfOrNull { it.mtime } ?: 0)
+    } catch (e: Exception) {
+      logger.error(e) { "Failed to enable cluster" }
+      throw e
+    }
+  }
+
+  private fun scheduleFileCheck(lastModified: Long) {
+    checkFileJob?.cancel()
+    checkFileJob =
         CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val result = storage.gc(files.files)
-                if (result.count == 0) {
-                    logger.info { "No expired files" }
-                } else {
-                    logger.info { "GC complete: deleted ${result.count} files, freed ${result.size} bytes" }
-                }
-            } catch (e: Exception) {
-                logger.error(e) { "GC error" }
+          delay(10.minutes)
+          try {
+            logger.debug { "Refreshing file list" }
+            val fileList = clusterService.getFileList(lastModified)
+            if (fileList.files.isEmpty()) {
+              logger.debug { "No new files" }
+            } else {
+              logger.info { "Found ${fileList.files.size} new files" }
+              val configuration = clusterService.getConfiguration()
+              clusterService.syncFiles(fileList, configuration.sync)
             }
+
+            // Schedule next check
+            val newLastModified = fileList.files.maxOfOrNull { it.mtime } ?: lastModified
+            scheduleFileCheck(newLastModified)
+          } catch (e: Exception) {
+            logger.error(e) { "File check error" }
+            scheduleFileCheck(lastModified) // Retry
+          }
         }
+  }
 
-        // Enable cluster
-        try {
-            logger.info { "Requesting to go online" }
-            clusterService.enable()
-            logger.info { "Cluster enabled, serving ${files.files.size} files" }
-
-            // Start keepalive
-            keepaliveService.start(clusterService.socket)
-
-            // Schedule periodic file check
-            scheduleFileCheck(files.files.maxOfOrNull { it.mtime } ?: 0)
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to enable cluster" }
-            throw e
-        }
-    }
-
-    private fun scheduleFileCheck(lastModified: Long) {
-        checkFileJob?.cancel()
-        checkFileJob =
-            CoroutineScope(Dispatchers.IO).launch {
-                delay(10.minutes)
-                try {
-                    logger.debug { "Refreshing file list" }
-                    val fileList = clusterService.getFileList(lastModified)
-                    if (fileList.files.isEmpty()) {
-                        logger.debug { "No new files" }
-                    } else {
-                        logger.info { "Found ${fileList.files.size} new files" }
-                        val configuration = clusterService.getConfiguration()
-                        clusterService.syncFiles(fileList, configuration.sync)
-                    }
-
-                    // Schedule next check
-                    val newLastModified = fileList.files.maxOfOrNull { it.mtime } ?: lastModified
-                    scheduleFileCheck(newLastModified)
-                } catch (e: Exception) {
-                    logger.error(e) { "File check error" }
-                    scheduleFileCheck(lastModified) // Retry
-                }
-            }
-    }
-
-    suspend fun shutdown() {
-        logger.info { "Shutting down" }
-        checkFileJob?.cancel()
-        keepaliveService.stop()
-        clusterService.disable()
-        clusterService.close()
-        tokenManager.close()
-    }
+  suspend fun shutdown() {
+    logger.info { "Shutting down" }
+    checkFileJob?.cancel()
+    keepaliveService.stop()
+    clusterService.disable()
+    clusterService.close()
+    tokenManager.close()
+  }
 }

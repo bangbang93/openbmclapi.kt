@@ -6,57 +6,54 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 object HashUtil {
-    fun hashToFilename(hash: String): String = "${hash.substring(0, 2)}${File.separator}$hash"
+  fun hashToFilename(hash: String): String = "${hash.substring(0, 2)}${File.separator}$hash"
 
-    fun validateFile(
-        buffer: ByteArray,
-        checkSum: String,
-    ): Boolean {
-        val algorithm = if (checkSum.length == 32) "MD5" else "SHA-1"
-        val digest = MessageDigest.getInstance(algorithm)
-        val hash = digest.digest(buffer)
-        return hash.toHexString() == checkSum
-    }
+  fun validateFile(
+      buffer: ByteArray,
+      checkSum: String,
+  ): Boolean {
+    val algorithm = if (checkSum.length == 32) "MD5" else "SHA-1"
+    val digest = MessageDigest.getInstance(algorithm)
+    val hash = digest.digest(buffer)
+    return hash.toHexString() == checkSum
+  }
 
-    fun sha1(data: ByteArray): String {
-        val digest = MessageDigest.getInstance("SHA-1")
-        val hash = digest.digest(data)
-        return hash.toBase64Url()
-    }
+  fun sha1(data: ByteArray): String {
+    val digest = MessageDigest.getInstance("SHA-1")
+    val hash = digest.digest(data)
+    return hash.toBase64Url()
+  }
 
-    fun checkSign(
-        hash: String,
-        secret: String,
-        query: Map<String, String>,
-    ): Boolean {
-        val s = query["s"] ?: return false
-        val e = query["e"] ?: return false
+  fun checkSign(
+      hash: String,
+      secret: String,
+      query: Map<String, String>,
+  ): Boolean {
+    val s = query["s"] ?: return false
+    val e = query["e"] ?: return false
 
-        val toSign = "$secret$hash$e"
-        val sign = sha1(toSign.toByteArray())
+    val toSign = "$secret$hash$e"
+    val sign = sha1(toSign.toByteArray())
 
-        val expiryTime = e.toLongOrNull(36) ?: return false
-        return sign == s && System.currentTimeMillis() < expiryTime
-    }
+    val expiryTime = e.toLongOrNull(36) ?: return false
+    return sign == s && System.currentTimeMillis() < expiryTime
+  }
 
-    fun createHmacSha256(
-        secret: String,
-        data: String,
-    ): String {
-        val mac = Mac.getInstance("HmacSHA256")
-        val secretKey = SecretKeySpec(secret.toByteArray(), "HmacSHA256")
-        mac.init(secretKey)
-        val hash = mac.doFinal(data.toByteArray())
-        return hash.toHexString()
-    }
+  fun createHmacSha256(
+      secret: String,
+      data: String,
+  ): String {
+    val mac = Mac.getInstance("HmacSHA256")
+    val secretKey = SecretKeySpec(secret.toByteArray(), "HmacSHA256")
+    mac.init(secretKey)
+    val hash = mac.doFinal(data.toByteArray())
+    return hash.toHexString()
+  }
 
-    private fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
+  private fun ByteArray.toHexString(): String = joinToString("") { "%02x".format(it) }
 
-    private fun ByteArray.toBase64Url(): String {
-        val base64 =
-            java.util.Base64
-                .getUrlEncoder()
-                .withoutPadding()
-        return base64.encodeToString(this)
-    }
+  private fun ByteArray.toBase64Url(): String {
+    val base64 = java.util.Base64.getUrlEncoder().withoutPadding()
+    return base64.encodeToString(this)
+  }
 }

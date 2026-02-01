@@ -1,7 +1,3 @@
 rootProject.name = "openbmclapi-agent"
 
-dependencyResolutionManagement {
-    repositories {
-        mavenCentral()
-    }
-}
+dependencyResolutionManagement { repositories { mavenCentral() } }

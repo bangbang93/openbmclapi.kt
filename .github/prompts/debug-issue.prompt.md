@@ -231,8 +231,8 @@ When reporting findings:
 ./gradlew dependencies
 ./gradlew dependencyTree
 
-# Run linter check
-./gradlew ktlintCheck
+# Run formatter check
+./gradlew ktfmtCheck
 ```
 
 ## See Also

@@ -26,11 +26,11 @@ jobs:
       - name: Set up Gradle wrapper
         uses: gradle/gradle-build-action@v3
 
-      - name: Format code with ktlint
-        run: ./gradlew ktlintFormat
+      - name: Format code with ktfmt
+        run: ./gradlew ktfmtFormat
 
       - name: Check code style
-        run: ./gradlew ktlintCheck
+        run: ./gradlew ktfmtCheck
 
       - name: Build with Gradle
         run: ./gradlew build
