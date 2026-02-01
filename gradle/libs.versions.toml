@@ -19,6 +19,7 @@ kotlin-retry = "2.0.2"
 mockk = "1.13.14"
 bouncycastle = "1.79"
 weupnp = "0.1.4"
+kotest = "6.1.2"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -60,6 +61,9 @@ bouncycastle-prov = { module = "org.bouncycastle:bcprov-jdk18on", version.ref = 
 bouncycastle-pkix = { module = "org.bouncycastle:bcpkix-jdk18on", version.ref = "bouncycastle" }
 weupnp = { module = "org.bitlet:weupnp", version.ref = "weupnp" }
 
+kotest-runner-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest" }
+kotest-assertions-core = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
@@ -67,3 +71,4 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 sonarqube = { id = "org.sonarqube", version = "7.1.0.6387" }
+kotest = { id = "io.kotest", version.ref = "kotest" }

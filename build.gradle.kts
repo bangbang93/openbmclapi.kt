@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonarqube)
+    alias(libs.plugins.kotest)
 }
 
 group = "com.bangbang93.openbmclapi.agent"
@@ -67,10 +68,13 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.mockk)
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions.core)
 }
 
-// Configure KSP to generate code in the correct source set
-kotlin { sourceSets.main { kotlin.srcDir("build/generated/ksp/main/kotlin") } }
+kotlin {
+    jvmToolchain(17)
+}
 
 ktfmt { kotlinLangStyle() }
 
@@ -80,3 +84,5 @@ sonar {
         property("sonar.organization", "bangbang93")
     }
 }
+
+tasks.withType<Test>().configureEach { useJUnitPlatform() }
