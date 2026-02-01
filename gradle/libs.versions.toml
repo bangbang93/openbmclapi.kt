@@ -20,6 +20,7 @@ mockk = "1.13.14"
 bouncycastle = "1.79"
 weupnp = "0.1.4"
 kotest = "6.1.2"
+spotless = '8.2.1'
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -72,3 +73,4 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
 sonarqube = { id = "org.sonarqube", version = "7.1.0.6387" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

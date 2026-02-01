@@ -43,8 +43,8 @@ data class EnableRequest(
 @OptIn(ExperimentalAtomicApi::class)
 @Single
 class Counters {
-    val hits = AtomicLong(0L)
-    val bytes = AtomicLong(0L)
+  val hits = AtomicLong(0L)
+  val bytes = AtomicLong(0L)
 }
 
 data class GCCounter(val count: Int, val size: Long)

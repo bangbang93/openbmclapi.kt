@@ -81,9 +81,7 @@ class CertificateServiceTest :
 
                         // Act
                         // 由于 mock 证书不是有效 PEM，此处仅测试请求流程
-                        shouldThrow<CertificateException> {
-                            certService.setupCertificates()
-                        }
+                        shouldThrow<CertificateException> { certService.setupCertificates() }
 
                         // Assert: 验证证书路径有效
                         val certPath = certService.getCertificatePath()

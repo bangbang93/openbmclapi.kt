@@ -3,9 +3,9 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.plugin.serialization)
-    alias(libs.plugins.ktfmt)
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.kotest)
+    alias(libs.plugins.spotless)
 }
 
 group = "com.bangbang93.openbmclapi.agent"
@@ -74,7 +74,11 @@ dependencies {
 
 kotlin { jvmToolchain(17) }
 
-ktfmt { kotlinLangStyle() }
+spotless {
+    kotlin {
+        ktfmt().metaStyle()
+    }
+}
 
 sonar {
     properties {
