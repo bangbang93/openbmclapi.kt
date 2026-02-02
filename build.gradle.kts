@@ -77,6 +77,7 @@ kotlin { jvmToolchain(17) }
 spotless {
     kotlin {
         ktfmt().metaStyle()
+        targetExclude("build/generated/**/*")
     }
 }
 
