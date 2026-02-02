@@ -111,7 +111,7 @@ Review against these standards:
 
 Verify before approving:
 ```bash
-./gradlew ktfmtCheck     # Style compliance
+./gradlew spotlessCheck  # Style compliance
 ./gradlew build          # Compiles and runs tests
 ./gradlew test           # All tests pass
 ```
@@ -166,7 +166,7 @@ Approve PR when:
 - Code follows established patterns
 
 Request Changes when:
-- Style violations that don't pass ktfmtCheck
+- Style violations that don't pass spotlessCheck
 - Architectural concerns
 - Security issues found
 - Insufficient test coverage

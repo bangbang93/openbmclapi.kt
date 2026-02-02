@@ -157,7 +157,7 @@ Before approving a PR:
 ## Build Verification Requirements
 
 Reviewers should verify:
-- [ ] `./gradlew ktfmtCheck` passes (code style compliance)
+- [ ] `./gradlew spotlessCheck` passes (code style compliance)
 - [ ] `./gradlew build` completes successfully
 - [ ] `./gradlew test` passes with reasonable coverage
 - [ ] No new warnings introduced

@@ -68,8 +68,8 @@ Follow the project structure defined in AGENTS.md:
 ## Build Verification
 
 Before committing changes:
-1. Run `./gradlew ktfmtFormat` to format code
-2. Run `./gradlew ktfmtCheck` to verify style
+1. Run `./gradlew spotlessApply` to format code
+2. Run `./gradlew spotlessCheck` to verify style
 3. Run `./gradlew build` to compile and run tests
 4. Ensure all tests pass
 

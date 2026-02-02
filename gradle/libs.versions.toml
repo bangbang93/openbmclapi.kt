@@ -8,7 +8,7 @@ ktor = "3.3.1"
 logback = "1.4.14"
 kotlinx-coroutines = "1.10.1"
 socket-io = "2.1.1"
-ktfmt = "0.25.0"
+
 dotenv = "6.3.1"
 avro4k = "2.6.0"
 zstd-jni = "1.5.7-6"
@@ -70,7 +70,7 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-ktfmt = { id = "com.ncorti.ktfmt.gradle", version.ref = "ktfmt" }
+
 sonarqube = { id = "org.sonarqube", version = "7.1.0.6387" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

@@ -232,7 +232,7 @@ When reporting findings:
 ./gradlew dependencyTree
 
 # Run formatter check
-./gradlew ktfmtCheck
+./gradlew spotlessCheck
 ```
 
 ## See Also

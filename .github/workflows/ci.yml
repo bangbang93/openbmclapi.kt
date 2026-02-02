@@ -23,8 +23,8 @@ jobs:
     - name: 授予gradlew执行权限
       run: chmod +x gradlew
 
-    - name: Ktfmt 检查
-      run: ./gradlew ktfmtCheck --no-daemon
+    - name: Spotless 检查
+      run: ./gradlew spotlessCheck --no-daemon
 
     - name: 编译检查
       run: ./gradlew build --no-daemon

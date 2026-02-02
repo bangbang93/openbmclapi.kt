@@ -75,7 +75,7 @@ Verify [Documentation Standards](../instructions/documentation.instructions.md):
 ## Pre-Review Checklist
 
 Before submitting PR, verify:
-- [ ] `./gradlew ktfmtCheck` passes (code style)
+- [ ] `./gradlew spotlessCheck` passes (code style)
 - [ ] `./gradlew build` completes successfully
 - [ ] `./gradlew test` passes with meaningful coverage
 - [ ] All tests pass locally
@@ -90,10 +90,10 @@ Before submitting PR, verify:
 
 ```bash
 # Format code
-./gradlew ktfmtFormat
+./gradlew spotlessApply
 
 # Check style
-./gradlew ktfmtCheck
+./gradlew spotlessCheck
 
 # Build and test
 ./gradlew build

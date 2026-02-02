@@ -95,7 +95,7 @@ java -jar build/libs/openbmclapi-agent-0.0.1-all.jar
 ### 代码格式化
 
 ```bash
-./gradlew ktfmtFormat
+./gradlew spotlessApply
 ```
 
 ## Docker 支持
@@ -222,14 +222,14 @@ export SSL_KEY=/path/to/key.pem
 
 ## 代码规范
 
-项目使用 ktfmt 进行代码格式化和检查:
+项目使用 Spotless 进行代码格式化和检查:
 
 ```bash
 # 检查代码风格
-./gradlew ktfmtCheck
+./gradlew spotlessCheck
 
 # 自动格式化代码
-./gradlew ktfmtFormat
+./gradlew spotlessApply
 ```
 
 配置文件: `.editorconfig`
@@ -241,7 +241,7 @@ export SSL_KEY=/path/to/key.pem
 1. 代码遵循 Kotlin 约定
 2. 测试通过: `./gradlew test`
 3. 构建成功: `./gradlew build`
-4. 代码已格式化: `./gradlew ktfmtFormat`
+4. 代码已格式化: `./gradlew spotlessApply`
 5. 保持与原始版本的 API 兼容性
 
 ## 许可证
