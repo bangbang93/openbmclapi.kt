@@ -95,14 +95,12 @@ tasks.withType<Test>().configureEach { useJUnitPlatform() }
 // 依赖不变时层缓存命中，推送时跳过已存在的层；支持多平台 manifest list
 jib {
     from {
-        image = "eclipse-temurin:17-jre"
+        // 本地 base 镜像（含 tini），由 CI/本地先 docker build base/ 得到，不推送 registry
+        image = "docker://openbmclapi-base:tools"
+        // 默认 amd64，CI 的 arm64 job 用 -Djib.from.platforms=linux/arm64 覆盖
         platforms {
             platform {
                 architecture = "amd64"
-                os = "linux"
-            }
-            platform {
-                architecture = "arm64"
                 os = "linux"
             }
         }
@@ -116,7 +114,13 @@ jib {
         }
     }
     container {
-        mainClass = "com.bangbang93.openbmclapi.agent.ApplicationKt"
+        // tini 作为 PID 1，负责信号转发和回收僵尸进程；设置后 jvmFlags/mainClass 被忽略
+        entrypoint = listOf(
+            "tini", "--",
+            "java",
+            "-cp", "/app/classes:/app/resources:/app/libs/*",
+            "com.bangbang93.openbmclapi.agent.ApplicationKt",
+        )
         ports = listOf("4000")
         volumes = listOf("/app/cache")
         user = "10001:10001"

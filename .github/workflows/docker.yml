@@ -6,10 +6,28 @@ on:
     tags: [ 'v*' ]
 
 jobs:
-  docker:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      base: ${{ steps.meta.outputs.base }}
+    steps:
+      - name: 计算镜像基础标签
+        id: meta
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "base=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-amd64:
+    needs: prepare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      - name: 本地构建 base（amd64 原生，含 tini，不推送）
+        run: docker build -t openbmclapi-base:tools base/
 
       - name: 设置 JDK 17
         uses: actions/setup-java@v5
@@ -21,17 +39,55 @@ jobs:
       - name: 授予gradlew执行权限
         run: chmod +x gradlew
 
-      - name: 计算镜像标签
-        id: meta
-        run: |
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            echo "TAG=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-          else
-            echo "TAG=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Jib 构建并推送镜像
-        run: ./gradlew jib --no-daemon -Djib.to.image=bangbang93/openbmclapi.kt:${{ steps.meta.outputs.TAG }}
+      - name: Jib 构建并推送 (amd64)
+        run: ./gradlew jib --no-daemon \
+            -Djib.from.platforms=linux/amd64 \
+            -Djib.to.image=bangbang93/openbmclapi.kt:${{ needs.prepare.outputs.base }}-amd64
         env:
           DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
           DOCKER_HUB_PASS: ${{ secrets.DOCKER_HUB_PASS }}
+
+  build-arm64:
+    needs: prepare
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 本地构建 base（arm64 原生，含 tini，不推送）
+        run: docker build -t openbmclapi-base:tools base/
+
+      - name: 设置 JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: 授予gradlew执行权限
+        run: chmod +x gradlew
+
+      - name: Jib 构建并推送 (arm64)
+        run: ./gradlew jib --no-daemon \
+            -Djib.from.platforms=linux/arm64 \
+            -Djib.to.image=bangbang93/openbmclapi.kt:${{ needs.prepare.outputs.base }}-arm64
+        env:
+          DOCKER_HUB_USER: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKER_HUB_PASS: ${{ secrets.DOCKER_HUB_PASS }}
+
+  merge:
+    needs: [ prepare, build-amd64, build-arm64 ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
+
+      - name: 合并多架构 manifest
+        run: |
+          BASE="bangbang93/openbmclapi.kt:${{ needs.prepare.outputs.base }}"
+          docker manifest create "$BASE" \
+            "${BASE}-amd64" \
+            "${BASE}-arm64"
+          docker manifest push "$BASE"
