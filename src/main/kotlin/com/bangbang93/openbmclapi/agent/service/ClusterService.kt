@@ -27,10 +27,8 @@ import io.ktor.http.HttpStatusCode
 import io.socket.client.IO
 import io.socket.client.Socket
 import java.net.URI
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.decodeFromByteArray
@@ -45,7 +43,7 @@ class ClusterService(
     private val tokenManager: TokenManager,
     private val httpClient: HttpClient,
     private val natService: NatService,
-) : CoroutineScope by CoroutineScope(Dispatchers.Default) {
+) {
   lateinit var socket: Socket
   var isEnabled = false
   var wantEnable = false
@@ -91,24 +89,22 @@ class ClusterService(
     logger.info { "Missing ${missingFiles.size} files, starting sync" }
     logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
 
-    val sema = Semaphore(syncConfig.concurrency)
-
-    val jobs =
-        missingFiles.map { file ->
-          async {
-            sema.withPermit {
-              try {
-                downloadFile(file)
-                logger.debug { "Downloaded: ${file.path}" }
-              } catch (e: Exception) {
-                logger.error(e) { "Failed to download ${file.path}" }
-                throw e
-              }
+    coroutineScope {
+      val sema = Semaphore(syncConfig.concurrency)
+      missingFiles.forEach { file ->
+        launch {
+          sema.withPermit {
+            try {
+              downloadFile(file)
+              logger.debug { "Downloaded: ${file.path}" }
+            } catch (e: Exception) {
+              logger.error(e) { "Failed to download ${file.path}" }
+              throw e
             }
           }
         }
-
-    jobs.awaitAll()
+      }
+    }
 
     logger.info { "Sync completed: ${missingFiles.size} files" }
   }
