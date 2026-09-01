@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.kotest)
     alias(libs.plugins.spotless)
+    alias(libs.plugins.jib)
 }
 
 group = "com.bangbang93.openbmclapi.agent"
@@ -89,3 +90,36 @@ sonar {
 }
 
 tasks.withType<Test>().configureEach { useJUnitPlatform() }
+
+// Jib 构建分层 Docker 镜像：自动把 dependencies / resources / classes 分成独立层，
+// 依赖不变时层缓存命中，推送时跳过已存在的层；支持多平台 manifest list
+jib {
+    from {
+        image = "eclipse-temurin:17-jre"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+            platform {
+                architecture = "arm64"
+                os = "linux"
+            }
+        }
+    }
+    to {
+        // tag 由 CI 通过 -Djib.to.image=bangbang93/openbmclapi.kt:<tag> 覆盖
+        image = "bangbang93/openbmclapi.kt"
+        auth {
+            username = providers.environmentVariable("DOCKER_HUB_USER").getOrElse("")
+            password = providers.environmentVariable("DOCKER_HUB_PASS").getOrElse("")
+        }
+    }
+    container {
+        mainClass = "com.bangbang93.openbmclapi.agent.ApplicationKt"
+        ports = listOf("4000")
+        volumes = listOf("/app/cache")
+        user = "10001:10001"
+        environment = mapOf("CLUSTER_PORT" to "4000")
+    }
+}

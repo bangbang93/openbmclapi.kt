@@ -21,6 +21,7 @@ bouncycastle = "1.79"
 weupnp = "0.1.4"
 kotest = "6.1.2"
 spotless = '8.2.1'
+jib = "3.5.4"
 
 [libraries]
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
@@ -74,3 +75,4 @@ kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization"
 sonarqube = { id = "org.sonarqube", version = "7.1.0.6387" }
 kotest = { id = "io.kotest", version.ref = "kotest" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
+jib = { id = "com.google.cloud.tools.jib", version.ref = "jib" }
