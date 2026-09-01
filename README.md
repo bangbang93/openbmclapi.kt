@@ -100,7 +100,38 @@ java -jar build/libs/openbmclapi-agent-0.0.1-all.jar
 
 ## Docker 支持
 
-即将推出 - Docker 支持将在未来更新中添加。
+官方 Docker 镜像已发布到 [Docker Hub](https://hub.docker.com/r/bangbang93/openbmclapi.kt)，支持 `linux/amd64` 与 `linux/arm64` 双平台。
+
+### 镜像标签
+
+- `master` 分支推送: 以 commit 短哈希作为标签，如 `bangbang93/openbmclapi.kt:abc1234`
+- `v*` 标签推送: 以 git tag 作为标签，如 `bangbang93/openbmclapi.kt:v1.2.3`
+
+### 运行
+
+```bash
+docker run -d \
+  --name openbmclapi \
+  -p 4000:4000 \
+  -v openbmclapi-cache:/app/cache \
+  -e CLUSTER_ID=你的集群ID \
+  -e CLUSTER_SECRET=你的集群密钥 \
+  bangbang93/openbmclapi.kt:<tag>
+```
+
+配置项与本地运行一致，见上文 [配置](#配置)。
+
+### 本地构建镜像
+
+镜像使用 [Jib](https://github.com/GoogleContainerTools/jib) 构建，自动将 `dependencies` / `resources` / `classes` 分成独立层，依赖不变时层缓存命中，推送可跳过已存在的层:
+
+```bash
+# 构建到本地 Docker daemon
+./gradlew jibDockerBuild
+
+# 构建并推送到 registry（tag 通过 -Djib.to.image 指定）
+./gradlew jib -Djib.to.image=bangbang93/openbmclapi.kt:<tag>
+```
 
 ## 存储后端
 
