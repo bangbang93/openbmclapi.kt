@@ -27,10 +27,9 @@ import io.ktor.http.HttpStatusCode
 import io.socket.client.IO
 import io.socket.client.Socket
 import java.net.URI
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.decodeFromByteArray
 import org.koin.core.annotation.Single
 
@@ -90,10 +89,16 @@ class ClusterService(
     logger.info { "Sync strategy: concurrency=${syncConfig.concurrency}" }
 
     coroutineScope {
-      val sema = Semaphore(syncConfig.concurrency)
-      missingFiles.forEach { file ->
+      val downloads = Channel<FileInfo>(syncConfig.concurrency)
+
+      launch {
+        missingFiles.forEach { downloads.send(it) }
+        downloads.close()
+      }
+
+      repeat(syncConfig.concurrency) {
         launch {
-          sema.withPermit {
+          for (file in downloads) {
             try {
               downloadFile(file)
               logger.debug { "Downloaded: ${file.path}" }
