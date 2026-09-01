@@ -40,7 +40,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Jib 构建并推送 (amd64)
-        run: ./gradlew jib --no-daemon \
+        run: |
+          ./gradlew jib --no-daemon \
             -Djib.from.platforms=linux/amd64 \
             -Djib.to.image=bangbang93/openbmclapi.kt:${{ needs.prepare.outputs.base }}-amd64
         env:
@@ -67,7 +68,8 @@ jobs:
         run: chmod +x gradlew
 
       - name: Jib 构建并推送 (arm64)
-        run: ./gradlew jib --no-daemon \
+        run: |
+          ./gradlew jib --no-daemon \
             -Djib.from.platforms=linux/arm64 \
             -Djib.to.image=bangbang93/openbmclapi.kt:${{ needs.prepare.outputs.base }}-arm64
         env:
