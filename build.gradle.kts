@@ -11,7 +11,7 @@ plugins {
 
 group = "com.bangbang93.openbmclapi.agent"
 
-version = "0.0.1"
+version = "1.0.1"
 
 application { mainClass = "com.bangbang93.openbmclapi.agent.ApplicationKt" }
 
